@@ -11,7 +11,8 @@ from middlewares import auth_middleware, check_membership, rate_limit_middleware
 from services import UserService, FileService, ShareService
 from utils import (
     main_menu, with_footer, format_size, format_dt,
-    channel_log, back_btn, time_left, premium_menu, search_filters
+    channel_log, back_btn, time_left, premium_menu, search_filters,
+    safe_edit
 )
 from config import cfg
 
@@ -139,7 +140,7 @@ async def cbq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         is_admin = cfg.is_admin(user.id)
         text = with_footer(WELCOME.format(name=user.first_name))
         markup = main_menu(is_premium=is_premium, is_admin=is_admin)
-        await query.edit_message_text(text, reply_markup=markup, parse_mode="HTML")
+        await safe_edit(query, text, reply_markup=markup, parse_mode="HTML")
 
     elif action == "stats":
         await _show_my_stats(query, context)
@@ -152,7 +153,8 @@ async def cbq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     elif action == "premium":
         is_premium = await UserService.is_premium(query.from_user.id)
-        await query.edit_message_text(
+        await safe_edit(
+            query,
             with_footer(_premium_text(is_premium)),
             reply_markup=premium_menu(has_premium=is_premium),
             parse_mode="HTML",
@@ -165,7 +167,8 @@ async def cbq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
         elif action == "search":
             context.user_data["awaiting_search"] = True
-            await query.edit_message_text(
+            await safe_edit(
+                query,
                 "🔍  <b>sᴇᴀʀᴄʜ ʏᴏᴜʀ ꜰɪʟᴇs</b>\n\nᴛʏᴘᴇ ᴀ ꜰɪʟᴇ ɴᴀᴍᴇ, ᴛᴀɢ, ᴏʀ ᴋᴇʏᴡᴏʀᴅ:",
                 reply_markup=search_filters(),
                 parse_mode="HTML",
@@ -214,7 +217,7 @@ async def _show_my_stats(query, context) -> None:
         f"├ ᴜsᴀɢᴇ:   [{bar}] {pct}%\n"
         f"└ ᴊᴏɪɴᴇᴅ:  {format_dt(user['joined_at'])}"
     )
-    await query.edit_message_text(with_footer(text), reply_markup=back_btn("menu:start"), parse_mode="HTML")
+    await safe_edit(query, with_footer(text), reply_markup=back_btn("menu:start"), parse_mode="HTML")
 
 
 def _premium_text(is_premium: bool) -> str:
@@ -257,7 +260,7 @@ async def _show_help(query) -> None:
         "ᴛᴏ ᴜᴘʟᴏᴀᴅ ᴀ ꜰɪʟᴇ, ᴊᴜsᴛ sᴇɴᴅ ɪᴛ ᴛᴏ ᴛʜᴇ ʙᴏᴛ ᴅɪʀᴇᴄᴛʟʏ.\n"
         "ᴛᴏ sᴇᴀʀᴄʜ, sᴇɴᴅ ᴀɴʏ ᴛᴇxᴛ ᴏʀ ᴜsᴇ /search."
     )
-    await query.edit_message_text(with_footer(text), reply_markup=back_btn("menu:start"), parse_mode="HTML")
+    await safe_edit(query, with_footer(text), reply_markup=back_btn("menu:start"), parse_mode="HTML")
 
 
 async def _show_about(query) -> None:
@@ -272,7 +275,7 @@ async def _show_about(query) -> None:
         "ᴠᴇʀsɪᴏɴ: 2.0.0\n"
         "ᴛᴇᴄʜ: ᴘʏᴛʜᴏɴ · ᴍᴏɴɢᴏᴅʙ · ᴛᴇʟᴇɢʀᴀᴍ"
     )
-    await query.edit_message_text(with_footer(text), reply_markup=back_btn("menu:start"), parse_mode="HTML")
+    await safe_edit(query, with_footer(text), reply_markup=back_btn("menu:start"), parse_mode="HTML")
 
 
 async def cbq_check_joined(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -285,7 +288,7 @@ async def cbq_check_joined(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         is_admin = cfg.is_admin(user.id)
         text = with_footer(WELCOME.format(name=user.first_name))
         markup = main_menu(is_premium=is_premium, is_admin=is_admin)
-        await query.edit_message_text(text, reply_markup=markup, parse_mode="HTML")
+        await safe_edit(query, text, reply_markup=markup, parse_mode="HTML")
     else:
         await query.answer("❌ ʏᴏᴜ ʜᴀᴠᴇɴ'ᴛ ᴊᴏɪɴᴇᴅ ᴀʟʟ ᴄʜᴀɴɴᴇʟs ʏᴇᴛ.", show_alert=True)
 

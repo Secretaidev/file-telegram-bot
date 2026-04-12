@@ -32,7 +32,8 @@ async def check_membership(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if not user:
         return True
 
-    if cfg.is_admin(user.id):
+    # Owner and admins always bypass membership check
+    if cfg.is_owner(user.id) or cfg.is_admin(user.id):
         return True
 
     bot = context.bot

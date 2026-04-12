@@ -53,7 +53,7 @@ def _register_handlers(app: Application) -> None:
     from handlers.folder import handle_folder_name
     from handlers.vault import handle_vault_input
     from handlers.search import handle_search_text
-    from handlers.admin import handle_broadcast
+    from handlers.admin import handle_broadcast, handle_admin_search
     from handlers.premium import handle_payment_screenshot
 
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_rename_input), group=1)
@@ -61,6 +61,7 @@ def _register_handlers(app: Application) -> None:
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_vault_input), group=3)
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search_text), group=4)
     app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, handle_broadcast), group=5)
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_admin_search), group=7)
 
     # Payment screenshot must be in a separate group so that handle_upload
     # (group 0) can return early when awaiting_screenshot is set, and this
@@ -90,6 +91,11 @@ async def _set_commands(app: Application) -> None:
 async def _on_startup(app: Application) -> None:
     await connect()
     await _set_commands(app)
+    # Cache actual bot username so deep-links are always correct
+    from utils.helpers import set_bot_username
+    me = await app.bot.get_me()
+    set_bot_username(me.username)
+    log.info("bot username: @%s", me.username)
     scheduler.start(app.bot)
     await system_log(app.bot, "🚀 vault bot started")
     log.info("startup complete")
