@@ -8,7 +8,7 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler, CommandHandler
 from middlewares import auth_middleware
-from services import ShareService, FileService
+from services import ShareService, FileService, UserService
 from utils import (
     share_link_view, with_footer, format_dt, time_left,
     channel_log, back_btn, start_link, btn, row, build, safe_edit
@@ -34,11 +34,15 @@ async def cbq_share(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         file_db_id = parts[2]
         expiry_key = parts[3] if len(parts) > 3 else "24h"
         hours = _EXPIRY_MAP.get(expiry_key, 24)
+        if not await _check_link_quota(q):
+            return
         link_doc = await ShareService.create_link(file_db_id, q.from_user.id, expiry_hours=hours)
         await _show_link(q, context, link_doc, file_db_id)
 
     elif action == "onetime":
         file_db_id = parts[2]
+        if not await _check_link_quota(q):
+            return
         link_doc = await ShareService.create_link(file_db_id, q.from_user.id, one_time=True)
         await _show_link(q, context, link_doc, file_db_id)
 
@@ -89,6 +93,25 @@ async def cbq_share(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await q.answer()
         page = int(parts[2]) if len(parts) > 2 else 0
         await _show_links_list(q, context, page)
+
+
+_FREE_LINK_LIMIT = 10
+
+
+async def _check_link_quota(q) -> bool:
+    """Return True if the user may create another link; answer the query and return False if not."""
+    is_premium = await UserService.is_premium(q.from_user.id)
+    if is_premium:
+        return True
+    _, total = await ShareService.list_user_links(q.from_user.id, page=0, limit=1)
+    if total >= _FREE_LINK_LIMIT:
+        await q.answer(
+            f"⛔ ꜰʀᴇᴇ ᴘʟᴀɴ ʟɪᴍɪᴛ: {_FREE_LINK_LIMIT} ᴀᴄᴛɪᴠᴇ ʟɪɴᴋs.\n"
+            "ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ ꜰᴏʀ ᴜɴʟɪᴍɪᴛᴇᴅ ʟɪɴᴋs — /premium",
+            show_alert=True,
+        )
+        return False
+    return True
 
 
 async def _show_link(q, context, link_doc: dict, file_db_id: str) -> None:

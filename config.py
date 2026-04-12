@@ -68,7 +68,7 @@ class Config:
     # storage limits (bytes); 0 = unlimited
     FREE_STORAGE_LIMIT: int = field(default_factory=lambda: _storage_limit_bytes("FREE_STORAGE_LIMIT_MB", 500))
     PREMIUM_STORAGE_LIMIT: int = field(default_factory=lambda: _storage_limit_bytes("PREMIUM_STORAGE_LIMIT_MB", 0))
-    FREE_UPLOAD_LIMIT: int = field(default_factory=lambda: _storage_limit_bytes("FREE_UPLOAD_LIMIT_MB", 20))
+    FREE_UPLOAD_LIMIT: int = field(default_factory=lambda: _storage_limit_bytes("FREE_UPLOAD_LIMIT_MB", 500))
     PREMIUM_UPLOAD_LIMIT: int = field(default_factory=lambda: _storage_limit_bytes("PREMIUM_UPLOAD_LIMIT_MB", 2048))
 
     # payment

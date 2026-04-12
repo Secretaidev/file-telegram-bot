@@ -14,7 +14,7 @@ from database.models import subscription_doc as mk_sub, payment_doc as mk_paymen
 log = logging.getLogger(__name__)
 
 PLANS = {
-    "yearly":  {"label": "yearly",  "days": 365, "amount": 39},
+    "yearly":  {"label": "yearly",  "days": 365, "amount": 99},
 }
 
 

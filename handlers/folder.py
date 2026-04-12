@@ -9,7 +9,7 @@ from telegram import Update
 from telegram.ext import ContextTypes, CallbackQueryHandler, MessageHandler, filters
 from middlewares import auth_middleware
 from services import FolderService, FileService
-from utils import folder_list, with_footer, format_size, back_btn, channel_log, btn, row, build
+from utils import folder_list, with_footer, format_size, back_btn, channel_log, btn, row, build, safe_edit
 from config import cfg
 
 log = logging.getLogger(__name__)
@@ -109,7 +109,7 @@ async def _show_folder(q, context, user_id: int, folder_id, page: int = 0) -> No
         page=page,
         total_pages=total_pages,
     )
-    await q.edit_message_text(with_footer(text), reply_markup=markup, parse_mode="HTML")
+    await safe_edit(q, with_footer(text), reply_markup=markup, parse_mode="HTML")
 
 
 async def handle_folder_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

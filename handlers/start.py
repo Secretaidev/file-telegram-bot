@@ -274,6 +274,8 @@ def _premium_text(is_premium: bool) -> str:
             "💎  <b>ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴇ</b>\n\n"
             "✅ ᴜɴʟɪᴍɪᴛᴇᴅ sᴛᴏʀᴀɢᴇ\n"
             "✅ 2 ɢʙ ᴜᴘʟᴏᴀᴅ ʟɪᴍɪᴛ\n"
+            "✅ ᴜɴʟɪᴍɪᴛᴇᴅ sʜᴀʀᴇ ʟɪɴᴋs\n"
+            "✅ ᴜɴʟɪᴍɪᴛᴇᴅ ᴠᴀᴜʟᴛ ꜰɪʟᴇs\n"
             "✅ ᴀᴅᴠᴀɴᴄᴇᴅ sᴇᴀʀᴄʜ ꜰɪʟᴛᴇʀs\n"
             "✅ ʙᴜʟᴋ ᴏᴘᴇʀᴀᴛɪᴏɴs\n"
             "✅ ᴘʀɪᴏʀɪᴛʏ sᴜᴘᴘᴏʀᴛ"
@@ -282,13 +284,16 @@ def _premium_text(is_premium: bool) -> str:
         "💎  <b>ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
         "<b>🆓 ꜰʀᴇᴇ ᴘʟᴀɴ</b>\n"
         "• 500 ᴍʙ sᴛᴏʀᴀɢᴇ\n"
-        "• 20 ᴍʙ ᴜᴘʟᴏᴀᴅ ʟɪᴍɪᴛ\n\n"
+        "• 500 ᴍʙ ᴜᴘʟᴏᴀᴅ ʟɪᴍɪᴛ\n"
+        "• 10 sʜᴀʀᴇ ʟɪɴᴋs\n\n"
         "<b>👑 ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴ</b>\n"
         "• ∞ ᴜɴʟɪᴍɪᴛᴇᴅ sᴛᴏʀᴀɢᴇ\n"
         "• 2 ɢʙ ᴜᴘʟᴏᴀᴅ ʟɪᴍɪᴛ\n"
+        "• ∞ ᴜɴʟɪᴍɪᴛᴇᴅ sʜᴀʀᴇ ʟɪɴᴋs\n"
+        "• ∞ ᴜɴʟɪᴍɪᴛᴇᴅ ᴠᴀᴜʟᴛ ꜰɪʟᴇs\n"
         "• ᴀʟʟ ꜰᴇᴀᴛᴜʀᴇs ᴜɴʟᴏᴄᴋᴇᴅ\n\n"
         "<b>ᴘʀɪᴄɪɴɢ</b>\n"
-        "• 👑 ʏᴇᴀʀʟʏ: <b>₹39 / ʏᴇᴀʀ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ"
+        "• 👑 ʏᴇᴀʀʟʏ: <b>₹99 / ʏᴇᴀʀ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ"
     )
 
 
@@ -314,8 +319,8 @@ async def _show_help(query) -> None:
     markup = build(
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
         row(
-            url_btn("👨‍💻  @its_me_secret",    "https://t.me/its_me_secret"),
-            url_btn("🆘  @song_assistant", "https://t.me/song_assistant"),
+            url_btn("👨‍💻  ᴅᴇᴠ",     "https://t.me/its_me_secret"),
+            url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant"),
         ),
     )
     await safe_edit(query, with_footer(text), reply_markup=markup, parse_mode="HTML")
@@ -336,8 +341,8 @@ async def _show_about(query) -> None:
     markup = build(
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
         row(
-            url_btn("👨‍💻  @its_me_secret",    "https://t.me/its_me_secret"),
-            url_btn("🆘  @song_assistant", "https://t.me/song_assistant"),
+            url_btn("👨‍💻  ᴅᴇᴠ",     "https://t.me/its_me_secret"),
+            url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant"),
         ),
     )
     await safe_edit(query, with_footer(text), reply_markup=markup, parse_mode="HTML")
