@@ -669,7 +669,7 @@ async def cmd_maintenance(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     await update.message.reply_text(text, parse_mode="HTML")
 
 
-
+async def handle_admin_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if context.user_data.get("admin_state") != "search_user":
         return
     if not cfg.is_admin(update.effective_user.id):
