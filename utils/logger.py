@@ -48,6 +48,14 @@ async def channel_log(
     details: Optional[Dict[str, Any]] = None,
     level: str = "info",
 ) -> None:
+    # ── persist to MongoDB logs collection ────────────────────────────────────
+    try:
+        from database import logs as logs_col, log_doc as mk_log
+        await logs_col().insert_one(mk_log(user_id, action, details or {}))
+    except Exception as e:
+        log.warning("failed to write log to db: %s", e)
+
+    # ── send to telegram log channel ──────────────────────────────────────────
     if not cfg.LOG_CHANNEL_ID:
         return
 

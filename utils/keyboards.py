@@ -207,8 +207,9 @@ def share_options(file_db_id: str) -> InlineKeyboardMarkup:
 
 
 def share_link_view(token: str, link_id: str) -> InlineKeyboardMarkup:
+    from utils.helpers import start_link
     return build(
-        row(url_btn("🔗  ᴏᴘᴇɴ ʟɪɴᴋ", f"https://t.me/{cfg.BOT_USERNAME}?start=dl_{token}")),
+        row(url_btn("🔗  ᴏᴘᴇɴ ʟɪɴᴋ", start_link(f"dl_{token}"))),
         row(btn("🗑  ʀᴇᴠᴏᴋᴇ ʟɪɴᴋ", f"share:revoke:{link_id}")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:links")),
     )
@@ -220,8 +221,9 @@ def admin_panel() -> InlineKeyboardMarkup:
     return build(
         row(btn("👥  ᴜsᴇʀs", "admin:users"), btn("📊  sᴛᴀᴛs", "admin:stats")),
         row(btn("📢  ʙʀᴏᴀᴅᴄᴀsᴛ", "admin:broadcast"), btn("💳  ᴘᴀʏᴍᴇɴᴛs", "admin:payments")),
-        row(btn("📋  ʟᴏɢs", "admin:logs"), btn("🛠  ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ", "admin:maintenance")),
-        row(btn("💾  ʙᴀᴄᴋᴜᴘ", "admin:backup"), btn("◀️  ʙᴀᴄᴋ", "menu:start")),
+        row(btn("📋  ʟᴏɢs", "admin:logs:0"), btn("🔎  sᴇᴀʀᴄʜ ᴜsᴇʀ", "admin:searchuser")),
+        row(btn("🛠  ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ", "admin:maintenance"), btn("💾  ʙᴀᴄᴋᴜᴘ", "admin:backup")),
+        row(btn("📂  ʙᴀᴄᴋᴜᴘ ʟɪsᴛ", "admin:backuplist"), btn("◀️  ʙᴀᴄᴋ", "menu:start")),
     )
 
 
@@ -233,6 +235,7 @@ def admin_user_actions(user_id: int, is_banned: bool, is_premium: bool) -> Inlin
             btn(prem_text, f"admin:togglepremium:{user_id}")),
         row(btn("📊  ᴜsᴇʀ sᴛᴀᴛs", f"admin:userstats:{user_id}"),
             btn("🗑  ᴅᴇʟᴇᴛᴇ ꜰɪʟᴇs", f"admin:deletefiles:{user_id}")),
+        row(btn("📋  ᴜsᴇʀ ʟᴏɢs", f"admin:userlogs:{user_id}:0")),
         row(btn("◀️  ʙᴀᴄᴋ", "admin:users")),
     )
 
@@ -244,6 +247,17 @@ def pending_payments_list(payments: list) -> InlineKeyboardMarkup:
             f"💳 {p['user_id']} — {p['plan']} — ₹{p['amount']}",
             f"admin:reviewpay:{str(p['_id'])}"
         )))
+    rows.append(row(btn("◀️  ʙᴀᴄᴋ", "admin:panel")))
+    return build(*rows)
+
+
+def backup_list_kb(backups: list) -> InlineKeyboardMarkup:
+    rows = []
+    for b in backups:
+        from utils.helpers import format_size
+        size_str = format_size(b["size"])
+        label = f"💾 {b['name'][:20]}{'…' if len(b['name']) > 20 else ''} ({size_str})"
+        rows.append(row(btn(label, f"admin:backupdownload:{b['name']}")))
     rows.append(row(btn("◀️  ʙᴀᴄᴋ", "admin:panel")))
     return build(*rows)
 

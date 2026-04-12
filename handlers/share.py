@@ -11,7 +11,7 @@ from middlewares import auth_middleware
 from services import ShareService, FileService
 from utils import (
     share_link_view, with_footer, format_dt, time_left,
-    channel_log, back_btn, start_link, btn, row, build
+    channel_log, back_btn, start_link, btn, row, build, safe_edit
 )
 from config import cfg
 
@@ -47,7 +47,8 @@ async def cbq_share(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         ok = await ShareService.revoke(link_db_id, q.from_user.id)
         await q.answer("✅ ʟɪɴᴋ ʀᴇᴠᴏᴋᴇᴅ." if ok else "❌ ꜰᴀɪʟᴇᴅ.", show_alert=True)
         if ok:
-            await q.edit_message_text(
+            await safe_edit(
+                q,
                 with_footer("🔗  ʟɪɴᴋ ʜᴀs ʙᴇᴇɴ ʀᴇᴠᴏᴋᴇᴅ sᴜᴄᴄᴇssꜰᴜʟʟʏ."),
                 reply_markup=back_btn("menu:links"),
                 parse_mode="HTML",
@@ -77,7 +78,8 @@ async def cbq_share(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             f"• ᴅᴏᴡɴʟᴏᴀᴅs: {link_doc.get('downloads', 0)}\n"
             f"• ᴀᴄᴛɪᴠᴇ: {'✅' if link_doc.get('is_active') else '❌'}"
         )
-        await q.edit_message_text(
+        await safe_edit(
+            q,
             with_footer(text),
             reply_markup=share_link_view(token, link_id),
             parse_mode="HTML",
@@ -103,7 +105,8 @@ async def _show_link(q, context, link_doc: dict, file_db_id: str) -> None:
         f"<code>{deep_link}</code>\n\n"
         f"• ᴇxᴘɪʀᴇs: {expires}{one_time_tag}"
     )
-    await q.edit_message_text(
+    await safe_edit(
+        q,
         with_footer(text),
         reply_markup=share_link_view(token, link_id),
         parse_mode="HTML",
@@ -121,7 +124,8 @@ async def _show_links_list(q, context, page: int) -> None:
     total_pages = max(1, (total + 4) // 5)
 
     if not link_list:
-        await q.edit_message_text(
+        await safe_edit(
+            q,
             with_footer("🔗  <b>ɴᴏ ᴀᴄᴛɪᴠᴇ ʟɪɴᴋs</b>\n\nᴄʀᴇᴀᴛᴇ ᴏɴᴇ ᴠɪᴀ ꜰɪʟᴇ → sʜᴀʀᴇ ʟɪɴᴋ."),
             reply_markup=back_btn("menu:start"),
             parse_mode="HTML",
@@ -146,7 +150,8 @@ async def _show_links_list(q, context, page: int) -> None:
         rows.append(nav)
     rows.append(row(btn("◀️  ʙᴀᴄᴋ", "menu:start")))
 
-    await q.edit_message_text(
+    await safe_edit(
+        q,
         with_footer(f"🔗  <b>ᴀᴄᴛɪᴠᴇ ʟɪɴᴋs</b> ({total})"),
         reply_markup=build(*rows),
         parse_mode="HTML",

@@ -123,10 +123,39 @@ def gpay_link(amount: float, note: str = "vault premium") -> str:
     return upi_link(amount, note)
 
 
+# ── dynamic bot username (set at startup from bot.get_me()) ──────────────────
+
+_bot_username: str = ""
+
+
+def set_bot_username(username: str) -> None:
+    """Called once at startup to cache the actual bot username from Telegram."""
+    global _bot_username
+    _bot_username = username
+
+
+def get_bot_username() -> str:
+    return _bot_username or cfg.BOT_USERNAME
+
+
 # ── deep link ─────────────────────────────────────────────────────────────────
 
 def start_link(payload: str) -> str:
-    return f"https://t.me/{cfg.BOT_USERNAME}?start={payload}"
+    return f"https://t.me/{get_bot_username()}?start={payload}"
+
+
+# ── safe message edit helper ──────────────────────────────────────────────────
+
+async def safe_edit(query_or_message, text: str, **kwargs) -> None:
+    """Edit message text, silently ignoring 'message is not modified' errors."""
+    from telegram.error import BadRequest
+    try:
+        await query_or_message.edit_message_text(text, **kwargs)
+    except BadRequest as e:
+        if "not modified" in str(e).lower():
+            pass
+        else:
+            raise
 
 
 # ── footer ────────────────────────────────────────────────────────────────────
