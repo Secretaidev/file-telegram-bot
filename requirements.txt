@@ -6,7 +6,7 @@ cryptography==46.0.5
 aiohttp==3.13.3
 apscheduler==3.10.4
 cachetools==5.3.3
-Pillow==11.1.0
+Pillow==12.1.1
 humanize==4.9.0
 python-magic==0.4.27
 aiofiles==23.2.1
