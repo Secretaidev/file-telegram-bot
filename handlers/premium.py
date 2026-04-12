@@ -86,9 +86,8 @@ async def cbq_premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 
 async def _show_payment_instructions(q, context, plan: str) -> None:
-    plan_data = SubscriptionService.PLANS.get(plan, SubscriptionService.PLANS["monthly"]) if hasattr(SubscriptionService, 'PLANS') else {"label": plan, "days": 30, "amount": 99}
     from services.subscription_service import PLANS
-    plan_data = PLANS.get(plan, PLANS["monthly"])
+    plan_data = PLANS.get(plan, PLANS["yearly"])
     amount = plan_data["amount"]
     upi = gpay_link(amount, note=f"vault {plan}")
 
@@ -260,7 +259,8 @@ def _build_premium_text(is_premium: bool) -> str:
     return (
         "💎  <b>ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
         "ᴜɴʟᴏᴄᴋ ᴛʜᴇ ꜰᴜʟʟ ᴘᴏᴡᴇʀ ᴏꜰ ᴠᴀᴜʟᴛ ʙᴏᴛ.\n\n"
-        "💳 <b>ᴘᴀʏ ᴠɪᴀ ɢᴘᴀʏ / ᴘʜᴏɴᴇᴘᴇ / ᴀɴʏ ᴜᴘɪ</b>"
+        "💳 <b>ᴘᴀʏ ᴠɪᴀ ɢᴘᴀʏ / ᴘʜᴏɴᴇᴘᴇ / ᴀɴʏ ᴜᴘɪ</b>\n\n"
+        "👑 ʏᴇᴀʀʟʏ: ₹39/ʏᴇᴀʀ"
     )
 
 
@@ -277,6 +277,8 @@ def _compare_text() -> str:
         "ᴀᴅᴠ. ꜰɪʟᴛᴇʀs       ✗        ✓\n"
         "ʙᴜʟᴋ ᴏᴘs           ✗        ✓\n"
         "ᴘʀɪᴏʀɪᴛʏ sᴜᴘᴘᴏʀᴛ  ✗        ✓\n"
+        "─────────────────────────────────\n"
+        "ᴘʀɪᴄᴇ            ꜰʀᴇᴇ    ₹39/ʏʀ\n"
         "</code>"
     )
 

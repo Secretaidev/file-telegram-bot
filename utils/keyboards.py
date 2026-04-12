@@ -153,8 +153,7 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
             row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
         )
     return build(
-        row(btn("💎  ᴍᴏɴᴛʜʟʏ — ₹99", "premium:buy:monthly"),
-            btn("👑  ʏᴇᴀʀʟʏ — ₹799", "premium:buy:yearly")),
+        row(btn("👑  ʏᴇᴀʀʟʏ — ₹39/ʏᴇᴀʀ", "premium:buy:yearly")),
         row(btn("💳  sᴇɴᴅ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ", "premium:payment")),
         row(btn("📋  ᴘʟᴀɴ ᴄᴏᴍᴘᴀʀɪsᴏɴ", "premium:compare")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
@@ -163,8 +162,7 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
 
 def payment_plan_select() -> InlineKeyboardMarkup:
     return build(
-        row(btn("💎  ᴍᴏɴᴛʜʟʏ — ₹99", "pay:plan:monthly:99"),
-            btn("👑  ʏᴇᴀʀʟʏ — ₹799", "pay:plan:yearly:799")),
+        row(btn("👑  ʏᴇᴀʀʟʏ — ₹39/ʏᴇᴀʀ", "pay:plan:yearly:39")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:premium")),
     )
 
