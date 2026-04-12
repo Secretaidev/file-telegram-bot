@@ -24,6 +24,24 @@ log = logging.getLogger(__name__)
 
 _MAINTENANCE_MODE = False
 
+_LOG_ICONS: dict = {
+    "upload":   "📤",
+    "download": "📥",
+    "delete":   "🗑",
+    "search":   "🔍",
+    "vault":    "🔐",
+    "share":    "🔗",
+    "payment":  "💳",
+    "auth":     "🔑",
+    "admin":    "⚙️",
+    "error":    "❌",
+    "ban":      "🚫",
+    "unban":    "✅",
+    "join":     "👋",
+    "system":   "🤖",
+    "backup":   "💾",
+}
+
 
 async def cmd_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not cfg.is_admin(update.effective_user.id):
@@ -117,7 +135,6 @@ async def cbq_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
 
     elif action == "maintenance":
-        global _MAINTENANCE_MODE
         await q.answer()
         _MAINTENANCE_MODE = not _MAINTENANCE_MODE
         status = "🔴 ᴏɴ" if _MAINTENANCE_MODE else "🟢 ᴏꜰꜰ"
@@ -342,12 +359,7 @@ async def _show_logs(q, context, page: int = 0) -> None:
     rows = []
     for entry in recent:
         ts = entry["created_at"].strftime("%m/%d %H:%M")
-        action_icon = {
-            "upload": "📤", "download": "📥", "delete": "🗑", "search": "🔍",
-            "vault": "🔐", "share": "🔗", "payment": "💳", "auth": "🔑",
-            "admin": "⚙️", "error": "❌", "ban": "🚫", "unban": "✅",
-            "join": "👋", "system": "🤖", "backup": "💾",
-        }.get(entry.get("action", ""), "📋")
+        action_icon = _LOG_ICONS.get(entry.get("action", ""), "📋")
         uid = entry["user_id"]
         label = f"{action_icon} {entry['action'].upper()} · uid:{uid} · {ts}"
         rows.append(row(btn(label, f"admin:logdetail:{entry['_id']}")))
@@ -421,10 +433,7 @@ async def _show_user_logs(q, context, user_id: int, page: int = 0) -> None:
     rows = []
     for entry in recent:
         ts = entry["created_at"].strftime("%m/%d %H:%M")
-        action_icon = {
-            "upload": "📤", "download": "📥", "delete": "🗑", "search": "🔍",
-            "vault": "🔐", "share": "🔗", "payment": "💳", "join": "👋",
-        }.get(entry.get("action", ""), "📋")
+        action_icon = _LOG_ICONS.get(entry.get("action", ""), "📋")
         label = f"{action_icon} {entry['action'].upper()} · {ts}"
         rows.append(row(btn(label, f"admin:logdetail:{entry['_id']}")))
 

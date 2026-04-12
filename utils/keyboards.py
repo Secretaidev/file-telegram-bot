@@ -256,7 +256,7 @@ def backup_list_kb(backups: list) -> InlineKeyboardMarkup:
     for b in backups:
         from utils.helpers import format_size
         size_str = format_size(b["size"])
-        label = f"💾 {b['name'][:20]}… ({size_str})"
+        label = f"💾 {b['name'][:20]}{'…' if len(b['name']) > 20 else ''} ({size_str})"
         rows.append(row(btn(label, f"admin:backupdownload:{b['name']}")))
     rows.append(row(btn("◀️  ʙᴀᴄᴋ", "admin:panel")))
     return build(*rows)
