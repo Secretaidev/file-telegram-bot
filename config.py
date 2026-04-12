@@ -47,6 +47,8 @@ class Config:
     STORAGE_CHANNEL_ID: int = field(default_factory=lambda: _int("STORAGE_CHANNEL_ID", 0))
     LOG_CHANNEL_ID: int = field(default_factory=lambda: _int("LOG_CHANNEL_ID", 0))
     REQUIRED_CHANNELS: List[str] = field(default_factory=lambda: _list("REQUIRED_CHANNELS"))
+    # backup channels: send backup JSON to these telegram chat IDs (comma-separated)
+    BACKUP_CHANNEL_IDS: List[int] = field(default_factory=lambda: _list_int("BACKUP_CHANNEL_IDS"))
 
     # security
     VAULT_SECRET: str = field(default_factory=lambda: os.getenv("VAULT_SECRET", "default_secret_change_me_123456"))

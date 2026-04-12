@@ -99,6 +99,8 @@ async def cbq_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await q.answer("⏳ ᴄʀᴇᴀᴛɪɴɢ ʙᴀᴄᴋᴜᴘ…")
         try:
             path = await BackupService.create_backup()
+            await BackupService.send_to_channels(context.bot, path)
+            await BackupService.cleanup_old_backups(keep=5)
             await q.edit_message_text(
                 with_footer(f"💾  <b>ʙᴀᴄᴋᴜᴘ ᴄᴏᴍᴘʟᴇᴛᴇ</b>\n\n<code>{path}</code>"),
                 reply_markup=back_btn("admin:panel"),
@@ -157,6 +159,25 @@ async def cbq_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             context.bot, "admin", q.from_user.id, q.from_user.username,
             details={"action": "toggle_premium", "target": user_id},
         )
+
+    elif action == "deletefiles":
+        user_id = int(parts[2])
+        user_doc = await UserService.get(user_id)
+        if not user_doc:
+            await q.answer("user not found", show_alert=True)
+            return
+        from database import files as files_col
+        result = await files_col().update_many(
+            {"owner_id": user_id},
+            {"$set": {"is_deleted": True}},
+        )
+        await UserService.update(user_id, {"storage_used": 0, "file_count": 0})
+        await q.answer(f"🗑 ᴅᴇʟᴇᴛᴇᴅ {result.modified_count} ꜰɪʟᴇs.")
+        await channel_log(
+            context.bot, "admin", q.from_user.id, q.from_user.username,
+            details={"action": "delete_all_files", "target": user_id, "count": result.modified_count},
+        )
+        await _show_user_stats(q, context, user_id)
 
     elif action == "userstats":
         user_id = int(parts[2])
@@ -411,7 +432,6 @@ def get_handlers():
         CommandHandler("unban", cmd_unban),
         CommandHandler("grant", cmd_grant),
         CallbackQueryHandler(cbq_admin, pattern=r"^admin:"),
-        MessageHandler(filters.ALL & ~filters.COMMAND, handle_broadcast),
     ]
 
 

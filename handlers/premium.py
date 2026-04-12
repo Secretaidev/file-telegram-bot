@@ -15,7 +15,7 @@ from services import SubscriptionService, UserService
 from utils import (
     premium_menu, payment_plan_select, payment_admin_review,
     with_footer, format_dt, time_left, channel_log, back_btn,
-    gpay_link, btn, row, build
+    gpay_link, btn, row, build, url_btn
 )
 from config import cfg
 
@@ -97,7 +97,7 @@ async def _show_payment_instructions(q, context, plan: str) -> None:
     context.user_data["awaiting_screenshot"] = True
 
     markup = build(
-        row(btn(f"💳  ᴘᴀʏ ₹{amount} ᴠɪᴀ ᴜᴘɪ/ɢᴘᴀʏ", upi)),
+        row(url_btn(f"💳  ᴘᴀʏ ₹{amount} ᴠɪᴀ ᴜᴘɪ/ɢᴘᴀʏ", upi)),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:premium")),
     )
 
@@ -286,5 +286,4 @@ def get_handlers():
         CommandHandler("premium", cmd_premium),
         CallbackQueryHandler(cbq_premium, pattern=r"^premium:"),
         CallbackQueryHandler(cbq_pay, pattern=r"^pay:"),
-        MessageHandler(filters.PHOTO | filters.Document.IMAGE, handle_payment_screenshot),
     ]

@@ -227,5 +227,4 @@ def get_handlers():
     return [
         CommandHandler("vault", cmd_vault),
         CallbackQueryHandler(cbq_vault, pattern=r"^vault:"),
-        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_vault_input),
     ]

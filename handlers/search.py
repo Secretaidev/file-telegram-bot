@@ -177,5 +177,4 @@ def get_handlers():
         CallbackQueryHandler(cbq_search, pattern=r"^search:"),
         CallbackQueryHandler(cbq_filter, pattern=r"^filter:"),
         CallbackQueryHandler(cbq_file_view, pattern=r"^file:view:"),
-        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search_text),
     ]

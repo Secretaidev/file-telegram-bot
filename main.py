@@ -15,7 +15,7 @@ except ImportError:
     pass
 
 from telegram import Update, BotCommand
-from telegram.ext import Application, ApplicationBuilder
+from telegram.ext import Application, ApplicationBuilder, MessageHandler, filters
 
 from config import cfg
 from database import connect, disconnect
@@ -27,6 +27,7 @@ log = logging.getLogger("vault.main")
 
 
 def _register_handlers(app: Application) -> None:
+    # ── group 0: command + callback handlers ──────────────────────────────────
     for module in (
         handlers.start,
         handlers.upload,
@@ -44,6 +45,32 @@ def _register_handlers(app: Application) -> None:
             app.add_handler(handler)
 
     app.add_error_handler(handlers.error.error_handler)
+
+    # ── text input handlers in separate groups to avoid conflicts ─────────────
+    # Each handler checks its own state guard and returns early if not active.
+    # Putting them in distinct groups ensures all are checked per text message.
+    from handlers.file_ops import handle_rename_input
+    from handlers.folder import handle_folder_name
+    from handlers.vault import handle_vault_input
+    from handlers.search import handle_search_text
+    from handlers.admin import handle_broadcast
+    from handlers.premium import handle_payment_screenshot
+
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_rename_input), group=1)
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_folder_name), group=2)
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_vault_input), group=3)
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search_text), group=4)
+    app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, handle_broadcast), group=5)
+
+    # Payment screenshot must be in a separate group so that handle_upload
+    # (group 0) can return early when awaiting_screenshot is set, and this
+    # handler processes the photo instead. Group 6 avoids any overlap with
+    # the text-input groups (1-5).
+    app.add_handler(
+        MessageHandler(filters.PHOTO | filters.Document.IMAGE, handle_payment_screenshot),
+        group=6,
+    )
+
     log.info("all handlers registered")
 
 
