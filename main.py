@@ -89,6 +89,7 @@ async def _set_commands(app: Application) -> None:
         BotCommand("search",      "sᴇᴀʀᴄʜ ʏᴏᴜʀ ꜰɪʟᴇs"),
         BotCommand("vault",       "ᴏᴘᴇɴ ᴠᴀᴜʟᴛ"),
         BotCommand("premium",     "ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴs"),
+        BotCommand("ai",          "ᴛᴏɢɢʟᴇ ᴀɪ ᴀssɪsᴛᴀɴᴛ ᴏɴ/ᴏꜰꜰ"),
         BotCommand("admin",       "ᴀᴅᴍɪɴ ᴘᴀɴᴇʟ"),
         BotCommand("maintenance", "ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴏɢɢʟᴇ"),
     ]
