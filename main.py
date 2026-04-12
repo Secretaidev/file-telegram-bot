@@ -47,8 +47,8 @@ def _register_handlers(app: Application) -> None:
     app.add_error_handler(handlers.error.error_handler)
 
     # ── text input handlers in separate groups to avoid conflicts ─────────────
-    # Each handler checks its own state guard and returns early if not active.
-    # Putting them in distinct groups ensures all are checked per text message.
+    # All state-based text handlers are restricted to PRIVATE chats.
+    # In groups the bot only reacts to its own commands (and @mentions for AI).
     from handlers.file_ops import handle_rename_input
     from handlers.folder import handle_folder_name
     from handlers.vault import handle_vault_input
@@ -56,24 +56,26 @@ def _register_handlers(app: Application) -> None:
     from handlers.admin import handle_broadcast, handle_admin_search
     from handlers.premium import handle_payment_screenshot
 
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_rename_input), group=1)
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_folder_name), group=2)
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_vault_input), group=3)
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search_text), group=4)
-    app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, handle_broadcast), group=5)
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_admin_search), group=7)
+    _private_text = filters.TEXT & ~filters.COMMAND & filters.ChatType.PRIVATE
+    _private_all  = filters.ALL  & ~filters.COMMAND & filters.ChatType.PRIVATE
 
-    # Payment screenshot must be in a separate group so that handle_upload
-    # (group 0) can return early when awaiting_screenshot is set, and this
-    # handler processes the photo instead. Group 6 avoids any overlap with
-    # the text-input groups (1-5).
+    app.add_handler(MessageHandler(_private_text, handle_rename_input), group=1)
+    app.add_handler(MessageHandler(_private_text, handle_folder_name), group=2)
+    app.add_handler(MessageHandler(_private_text, handle_vault_input), group=3)
+    app.add_handler(MessageHandler(_private_text, handle_search_text), group=4)
+    app.add_handler(MessageHandler(_private_all,  handle_broadcast), group=5)
+    app.add_handler(MessageHandler(_private_text, handle_admin_search), group=7)
+
+    # Payment screenshot — private chats only
     app.add_handler(
-        MessageHandler(filters.PHOTO | filters.Document.IMAGE, handle_payment_screenshot),
+        MessageHandler(
+            (filters.PHOTO | filters.Document.IMAGE) & filters.ChatType.PRIVATE,
+            handle_payment_screenshot,
+        ),
         group=6,
     )
 
     # AI assistant — group 10 so all state-based handlers (1-7) run first.
-    # The AI handler itself checks for active states before replying.
     for handler in handlers.ai.get_handlers():
         app.add_handler(handler, group=10)
 
@@ -82,12 +84,13 @@ def _register_handlers(app: Application) -> None:
 
 async def _set_commands(app: Application) -> None:
     commands = [
-        BotCommand("start",   "ᴍᴀɪɴ ᴍᴇɴᴜ"),
-        BotCommand("upload",  "ᴜᴘʟᴏᴀᴅ ᴀ ꜰɪʟᴇ"),
-        BotCommand("search",  "sᴇᴀʀᴄʜ ʏᴏᴜʀ ꜰɪʟᴇs"),
-        BotCommand("vault",   "ᴏᴘᴇɴ ᴠᴀᴜʟᴛ"),
-        BotCommand("premium", "ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴs"),
-        BotCommand("admin",   "ᴀᴅᴍɪɴ ᴘᴀɴᴇʟ"),
+        BotCommand("start",       "ᴍᴀɪɴ ᴍᴇɴᴜ"),
+        BotCommand("upload",      "ᴜᴘʟᴏᴀᴅ ᴀ ꜰɪʟᴇ"),
+        BotCommand("search",      "sᴇᴀʀᴄʜ ʏᴏᴜʀ ꜰɪʟᴇs"),
+        BotCommand("vault",       "ᴏᴘᴇɴ ᴠᴀᴜʟᴛ"),
+        BotCommand("premium",     "ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴs"),
+        BotCommand("admin",       "ᴀᴅᴍɪɴ ᴘᴀɴᴇʟ"),
+        BotCommand("maintenance", "ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴛᴏɢɢʟᴇ"),
     ]
     await app.bot.set_my_commands(commands)
     log.info("bot commands set")

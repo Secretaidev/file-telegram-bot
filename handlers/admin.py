@@ -625,7 +625,51 @@ async def cmd_grant(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         pass
 
 
-async def handle_admin_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+@require_admin
+async def cmd_maintenance(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Toggle maintenance mode: /maintenance on | /maintenance off"""
+    global _MAINTENANCE_MODE
+    args = context.args
+    if not args or args[0].lower() not in ("on", "off"):
+        status = "🔴 ᴏɴ" if _MAINTENANCE_MODE else "🟢 ᴏꜰꜰ"
+        await update.message.reply_text(
+            f"🛠  <b>ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ</b>: {status}\n\n"
+            "ᴜsᴀɢᴇ: /maintenance on | /maintenance off",
+            parse_mode="HTML",
+        )
+        return
+
+    new_state = args[0].lower() == "on"
+    if new_state == _MAINTENANCE_MODE:
+        status = "🔴 ᴀʟʀᴇᴀᴅʏ ᴏɴ" if _MAINTENANCE_MODE else "🟢 ᴀʟʀᴇᴀᴅʏ ᴏꜰꜰ"
+        await update.message.reply_text(
+            f"🛠  ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ {status}.", parse_mode="HTML"
+        )
+        return
+
+    _MAINTENANCE_MODE = new_state
+    from utils.logger import system_log
+    await system_log(context.bot, f"maintenance mode {'ON' if _MAINTENANCE_MODE else 'OFF'} by {update.effective_user.id}")
+
+    if _MAINTENANCE_MODE:
+        text = (
+            "🛠  <b>ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ</b> 🔴\n\n"
+            "╔══════════════════════════════╗\n"
+            "║  ⚙️  sʏsᴛᴇᴍ ᴜɴᴅᴇʀ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ  ║\n"
+            "╚══════════════════════════════╝\n\n"
+            "ᴀʟʟ ᴜsᴇʀ ᴄᴏᴍᴍᴀɴᴅs ᴀʀᴇ ᴅɪsᴀʙʟᴇᴅ.\n"
+            "ᴏɴʟʏ ᴀᴅᴍɪɴs ᴄᴀɴ ɪɴᴛᴇʀᴀᴄᴛ ᴡɪᴛʜ ᴛʜᴇ ʙᴏᴛ."
+        )
+    else:
+        text = (
+            "✅  <b>ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ ᴍᴏᴅᴇ ᴅɪsᴀʙʟᴇᴅ</b> 🟢\n\n"
+            "ᴀʟʟ sᴇʀᴠɪᴄᴇs ᴀʀᴇ ʙᴀᴄᴋ ᴏɴʟɪɴᴇ. ᴜsᴇʀs ᴄᴀɴ ɴᴏᴡ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ."
+        )
+
+    await update.message.reply_text(text, parse_mode="HTML")
+
+
+
     if context.user_data.get("admin_state") != "search_user":
         return
     if not cfg.is_admin(update.effective_user.id):
@@ -669,6 +713,7 @@ def get_handlers():
         CommandHandler("ban", cmd_ban),
         CommandHandler("unban", cmd_unban),
         CommandHandler("grant", cmd_grant),
+        CommandHandler("maintenance", cmd_maintenance),
         CallbackQueryHandler(cbq_admin, pattern=r"^admin:"),
     ]
 
