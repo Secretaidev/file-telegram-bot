@@ -52,6 +52,7 @@ async def cbq_premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await q.edit_message_text(
             with_footer(
                 "💳  <b>sᴇʟᴇᴄᴛ ᴀ ᴘʟᴀɴ</b>\n\n"
+                "👑 ʏᴇᴀʀʟʏ: <b>₹39 / ʏᴇᴀʀ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ\n\n"
                 "ᴄʜᴏᴏsᴇ ᴀ ᴘʟᴀɴ ᴛᴏ ᴄᴏɴᴛɪɴᴜᴇ:"
             ),
             reply_markup=payment_plan_select(),
@@ -101,7 +102,7 @@ async def cbq_premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 async def _show_payment_instructions(q, context, plan: str) -> None:
     from services.subscription_service import PLANS
-    plan_data = PLANS.get(plan, PLANS["monthly"])
+    plan_data = PLANS.get(plan, PLANS["yearly"])
     amount = plan_data["amount"]
 
     context.user_data["payment_plan"] = plan
@@ -138,7 +139,7 @@ async def handle_payment_screenshot(update: Update, context: ContextTypes.DEFAUL
         return
 
     user = update.effective_user
-    plan = context.user_data.pop("payment_plan", "monthly")
+    plan = context.user_data.pop("payment_plan", "yearly")
     context.user_data.pop("awaiting_screenshot", None)
 
     photo = update.message.photo
@@ -223,7 +224,7 @@ async def cbq_pay(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             return
         await q.answer("✅ ᴘᴀʏᴍᴇɴᴛ ᴀᴘᴘʀᴏᴠᴇᴅ.")
         await q.edit_message_caption(
-            caption=q.message.caption + "\n\n✅ <b>APPROVED</b>",
+            caption=(q.message.caption or "") + "\n\n✅ <b>APPROVED</b>",
             parse_mode="HTML",
         )
         try:
@@ -254,7 +255,7 @@ async def cbq_pay(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             return
         await q.answer("❌ ᴘᴀʏᴍᴇɴᴛ ʀᴇᴊᴇᴄᴛᴇᴅ.")
         await q.edit_message_caption(
-            caption=q.message.caption + "\n\n❌ <b>REJECTED</b>",
+            caption=(q.message.caption or "") + "\n\n❌ <b>REJECTED</b>",
             parse_mode="HTML",
         )
         try:
@@ -281,6 +282,7 @@ def _build_premium_text(is_premium: bool) -> str:
         "💎  <b>ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
         "ᴜɴʟᴏᴄᴋ ᴛʜᴇ ꜰᴜʟʟ ᴘᴏᴡᴇʀ ᴏꜰ\n"
         "🔒 sᴇᴄʀᴇᴛ ꜰɪʟᴇ sᴛᴏʀᴀɢᴇ ʙᴏᴛ.\n\n"
+        "👑 <b>ʏᴇᴀʀʟʏ: ₹39 / ʏᴇᴀʀ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ\n\n"
         "💳 <b>ᴘᴀʏ ᴠɪᴀ ɢᴘᴀʏ / ᴘʜᴏɴᴇᴘᴇ / ᴀɴʏ ᴜᴘɪ</b>"
     )
 
@@ -299,7 +301,8 @@ def _compare_text() -> str:
         "ʙᴜʟᴋ ᴏᴘs           ✗        ✓\n"
         "ᴘʀɪᴏʀɪᴛʏ sᴜᴘᴘᴏʀᴛ  ✗        ✓\n"
         "ᴀɪ ᴀssɪsᴛᴀɴᴄᴇ     ✗        ✓\n"
-        "</code>"
+        "</code>\n\n"
+        "👑 <b>ʏᴇᴀʀʟʏ: ₹39 / ʏᴇᴀʀ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ"
     )
 
 

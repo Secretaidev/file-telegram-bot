@@ -1,5 +1,5 @@
 """
-vault bot — subscription service
+sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ — subscription service
 premium plan management, payment tracking, approval workflow
 """
 
@@ -14,8 +14,7 @@ from database.models import subscription_doc as mk_sub, payment_doc as mk_paymen
 log = logging.getLogger(__name__)
 
 PLANS = {
-    "monthly": {"label": "monthly", "days": 30,  "amount": 99},
-    "yearly":  {"label": "yearly",  "days": 365, "amount": 799},
+    "yearly":  {"label": "yearly",  "days": 365, "amount": 39},
 }
 
 
@@ -29,7 +28,7 @@ class SubscriptionService:
 
     @staticmethod
     async def grant(user_id: int, plan: str, granted_by: int) -> Dict[str, Any]:
-        plan_data = PLANS.get(plan, PLANS["monthly"])
+        plan_data = PLANS.get(plan, PLANS["yearly"])
         expires_at = datetime.utcnow() + timedelta(days=plan_data["days"])
 
         doc = mk_sub(user_id=user_id, plan=plan, expires_at=expires_at, granted_by=granted_by)
@@ -59,7 +58,7 @@ class SubscriptionService:
         screenshot_file_id: str,
         screenshot_message_id: int,
     ) -> Dict[str, Any]:
-        plan_data = PLANS.get(plan, PLANS["monthly"])
+        plan_data = PLANS.get(plan, PLANS["yearly"])
         doc = mk_payment(
             user_id=user_id,
             plan=plan,

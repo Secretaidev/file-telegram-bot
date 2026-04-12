@@ -1,5 +1,5 @@
 """
-vault bot — inline keyboard builders
+sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ — inline keyboard builders
 all ui built with inline keyboards; small caps unicode throughout
 """
 
@@ -39,6 +39,10 @@ def main_menu(is_premium: bool = False, is_admin: bool = False) -> InlineKeyboar
     if is_admin:
         rows.append(row(btn("⚙️  ᴀᴅᴍɪɴ ᴘᴀɴᴇʟ", "admin:panel")))
     rows.append(row(btn("❓  ʜᴇʟᴘ", "menu:help"), btn("ℹ️  ᴀʙᴏᴜᴛ", "menu:about")))
+    rows.append(row(
+        url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret"),
+        url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant"),
+    ))
     return build(*rows)
 
 
@@ -151,20 +155,26 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
             row(btn("✅  ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴇ", "noop")),
             row(btn("📊  ᴍʏ ᴘʟᴀɴ", "premium:status")),
             row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
+            row(
+                url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret"),
+                url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant"),
+            ),
         )
     return build(
-        row(btn("💎  ᴍᴏɴᴛʜʟʏ — ₹99", "premium:buy:monthly"),
-            btn("👑  ʏᴇᴀʀʟʏ — ₹799", "premium:buy:yearly")),
+        row(btn("👑  ʏᴇᴀʀʟʏ — ₹39 / ʏᴇᴀʀ", "premium:buy:yearly")),
         row(btn("💳  sᴇɴᴅ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ", "premium:payment")),
         row(btn("📋  ᴘʟᴀɴ ᴄᴏᴍᴘᴀʀɪsᴏɴ", "premium:compare")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
+        row(
+            url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret"),
+            url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant"),
+        ),
     )
 
 
 def payment_plan_select() -> InlineKeyboardMarkup:
     return build(
-        row(btn("💎  ᴍᴏɴᴛʜʟʏ — ₹99", "pay:plan:monthly:99"),
-            btn("👑  ʏᴇᴀʀʟʏ — ₹799", "pay:plan:yearly:799")),
+        row(btn("👑  ʏᴇᴀʀʟʏ — ₹39 / ʏᴇᴀʀ", "pay:plan:yearly:39")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:premium")),
     )
 
