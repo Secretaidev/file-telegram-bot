@@ -156,7 +156,7 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
             row(btn("📊  ᴍʏ ᴘʟᴀɴ", "premium:status")),
             row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
             row(
-                url_btn("👨‍💻  ᴅᴇᴠ",     "https://t.me/its_me_secret"),
+                url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret"),
                 url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant"),
             ),
         )
@@ -166,7 +166,7 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
         row(btn("📋  ᴘʟᴀɴ ᴄᴏᴍᴘᴀʀɪsᴏɴ", "premium:compare")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
         row(
-            url_btn("👨‍💻  ᴅᴇᴠ",     "https://t.me/its_me_secret"),
+            url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret"),
             url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant"),
         ),
     )

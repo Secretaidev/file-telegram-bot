@@ -319,7 +319,7 @@ async def _show_help(query) -> None:
     markup = build(
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
         row(
-            url_btn("👨‍💻  ᴅᴇᴠ",     "https://t.me/its_me_secret"),
+            url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret"),
             url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant"),
         ),
     )
@@ -341,7 +341,7 @@ async def _show_about(query) -> None:
     markup = build(
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
         row(
-            url_btn("👨‍💻  ᴅᴇᴠ",     "https://t.me/its_me_secret"),
+            url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret"),
             url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant"),
         ),
     )
