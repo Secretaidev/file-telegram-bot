@@ -17,7 +17,8 @@ log = logging.getLogger(__name__)
 async def auth_middleware(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
     user = update.effective_user
     if not user:
-        return True
+        # Channel posts, anonymous admin messages, etc. — skip silently
+        return False
 
     doc = await users().find_one({"user_id": user.id})
 

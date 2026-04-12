@@ -186,5 +186,5 @@ async def cmd_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 def get_handlers():
     return [
         CommandHandler("upload", cmd_upload),
-        MessageHandler(_SUPPORTED, handle_upload),
+        MessageHandler(_SUPPORTED & filters.ChatType.PRIVATE, handle_upload),
     ]

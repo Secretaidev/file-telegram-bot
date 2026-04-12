@@ -16,6 +16,7 @@ from utils import with_footer
 log = logging.getLogger(__name__)
 
 _GROK_URL = "https://api.x.ai/v1/chat/completions"
+_GROK_MODEL = "grok-3-mini"  # xAI Grok model — update if the API name changes
 
 _SYSTEM_PROMPT = (
     "You are a helpful, smart, and friendly assistant inside a Telegram bot called "
@@ -47,7 +48,7 @@ async def _ask_grok(user_message: str, history: list) -> Optional[str]:
     messages.append({"role": "user", "content": user_message})
 
     payload = {
-        "model": "grok-3-mini",
+        "model": _GROK_MODEL,
         "messages": messages,
         "temperature": 0.8,
         "max_tokens": 256,
@@ -116,6 +117,7 @@ async def handle_ai_dm(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     reply = await _ask_grok(text, history)
     if not reply:
+        await update.message.reply_text(_FALLBACK)
         return
 
     # store this turn
@@ -145,9 +147,16 @@ async def handle_ai_group_mention(update: Update, context: ContextTypes.DEFAULT_
     if mention.lower() not in message.text.lower():
         return
 
+    if not cfg.GROK_API_KEY:
+        await message.reply_text(
+            "🤖 ᴀɪ ᴀssɪsᴛᴀɴᴛ ɪs ᴄᴜʀʀᴇɴᴛʟʏ ᴅɪsᴀʙʟᴇᴅ."
+        )
+        return
+
     # strip mention from the text
     user_text = message.text.replace(mention, "").strip()
-    if not user_text or not cfg.GROK_API_KEY:
+    if not user_text:
+        await message.reply_text("👋 ᴛʏᴘᴇ ᴀ ǫᴜᴇsᴛɪᴏɴ ᴀꜰᴛᴇʀ ᴍᴇɴᴛɪᴏɴɪɴɢ ᴍᴇ!")
         return
 
     await context.bot.send_chat_action(update.effective_chat.id, "typing")
@@ -156,6 +165,8 @@ async def handle_ai_group_mention(update: Update, context: ContextTypes.DEFAULT_
     reply = await _ask_grok(user_text, [])
     if reply:
         await message.reply_text(reply)
+    else:
+        await message.reply_text(_FALLBACK)
 
 
 def get_handlers():

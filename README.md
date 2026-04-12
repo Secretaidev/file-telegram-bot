@@ -40,23 +40,23 @@ Every interaction is keyboard-driven, every UI element uses **small-caps Unicode
 
 | Category | Feature | Free | Premium |
 |---|---|:---:|:---:|
-| **Storage** | File upload & management | ✓ 20MB | ✓ 2GB |
+| **Storage** | File upload & management | ✓ 500MB | ✓ 2GB |
 | | Folder tree navigation | ✓ | ✓ |
 | | File rename / move / copy | ✓ | ✓ |
 | | Duplicate detection | ✓ | ✓ |
-| | Storage quota | 500MB | 10GB |
+| | Storage quota | 500MB | ∞ Unlimited |
 | **Search** | Full-text search | ✓ | ✓ |
 | | Category filters | ✓ | ✓ |
 | | Advanced filters (size/date/tags) | ✗ | ✓ |
 | | Sort by latest / size / popularity | ✓ | ✓ |
-| **Vault** | PIN-protected encrypted vault | 5 files | ✓ Unlimited |
+| **Vault** | PIN-protected encrypted vault | ✓ Unlimited | ✓ Unlimited |
 | | Auto-lock after inactivity | ✓ | ✓ |
 | | Session management | ✓ | ✓ |
-| **Sharing** | Token-based share links | 3 links | ✓ Unlimited |
+| **Sharing** | Token-based share links | 10 links | ✓ Unlimited |
 | | Expiry control | ✓ | ✓ |
-| | One-time download links | ✗ | ✓ |
+| | One-time download links | ✓ | ✓ |
 | | Password-protected links | ✗ | ✓ |
-| **Premium** | Subscription plans | — | ₹39/yr |
+| **Premium** | Subscription plans | — | ₹99/yr |
 | | GPay / UPI payment | ✓ | — |
 | | Admin approval workflow | — | ✓ |
 | **Admin** | Broadcast messages | — | ✓ |
@@ -215,10 +215,10 @@ python main.py
 
 ## ✦ Premium Pricing
 
-| Plan | Price | Storage | Upload Limit |
-|---|---|---|---|
-| 🆓 Free | — | 500 MB | 20 MB |
-| 👑 Yearly | **₹39 / year** | ∞ Unlimited | 2 GB |
+| Plan | Price | Storage | Upload Limit | Share Links |
+|---|---|---|---|---|
+| 🆓 Free | — | 500 MB | 500 MB | 10 links |
+| 👑 Yearly | **₹99 / year** | ∞ Unlimited | 2 GB | ∞ Unlimited |
 
 Payment is via UPI (GPay · PhonePe · Paytm · BHIM). User sends screenshot → owner approves → premium activated instantly.
 
