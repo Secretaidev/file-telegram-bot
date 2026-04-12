@@ -53,6 +53,36 @@ async def cbq_share(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 parse_mode="HTML",
             )
 
+    elif action == "detail":
+        link_db_id = parts[2]
+        from database import links
+        from bson import ObjectId
+        try:
+            link_doc = await links().find_one({"_id": ObjectId(link_db_id)})
+        except Exception:
+            link_doc = None
+        if not link_doc:
+            await q.answer("ʟɪɴᴋ ɴᴏᴛ ꜰᴏᴜɴᴅ.", show_alert=True)
+            return
+        await q.answer()
+        token = link_doc["token"]
+        link_id = str(link_doc["_id"])
+        expires = "ɴᴇᴠᴇʀ ᴇxᴘɪʀᴇs" if not link_doc.get("expires_at") else time_left(link_doc["expires_at"])
+        one_time_tag = "\n• ᴏɴᴇ-ᴛɪᴍᴇ ʟɪɴᴋ" if link_doc.get("one_time") else ""
+        deep_link = start_link(f"dl_{token}")
+        text = (
+            f"🔗  <b>sʜᴀʀᴇ ʟɪɴᴋ ᴅᴇᴛᴀɪʟ</b>\n\n"
+            f"<code>{deep_link}</code>\n\n"
+            f"• ᴇxᴘɪʀᴇs: {expires}{one_time_tag}\n"
+            f"• ᴅᴏᴡɴʟᴏᴀᴅs: {link_doc.get('downloads', 0)}\n"
+            f"• ᴀᴄᴛɪᴠᴇ: {'✅' if link_doc.get('is_active') else '❌'}"
+        )
+        await q.edit_message_text(
+            with_footer(text),
+            reply_markup=share_link_view(token, link_id),
+            parse_mode="HTML",
+        )
+
     elif action == "list":
         await q.answer()
         page = int(parts[2]) if len(parts) > 2 else 0

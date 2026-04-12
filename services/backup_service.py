@@ -8,7 +8,7 @@ import json
 import logging
 import os
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from bson import ObjectId
 from database import get_db
 
@@ -50,6 +50,28 @@ class BackupService:
         return path
 
     @staticmethod
+    async def send_to_channels(bot, path: str) -> None:
+        """Send the backup file to all configured backup channels."""
+        from config import cfg
+        if not cfg.BACKUP_CHANNEL_IDS:
+            return
+        ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+        caption = f"💾 <b>ᴀᴜᴛᴏ ʙᴀᴄᴋᴜᴘ</b>\n<code>{ts}</code>"
+        for chat_id in cfg.BACKUP_CHANNEL_IDS:
+            try:
+                with open(path, "rb") as f:
+                    await bot.send_document(
+                        chat_id=chat_id,
+                        document=f,
+                        filename=os.path.basename(path),
+                        caption=caption,
+                        parse_mode="HTML",
+                    )
+                log.info("backup sent to channel %d", chat_id)
+            except Exception as e:
+                log.error("failed to send backup to channel %d: %s", chat_id, e)
+
+    @staticmethod
     async def restore_backup(path: str) -> Dict[str, int]:
         if not os.path.exists(path):
             raise FileNotFoundError(f"backup not found: {path}")
@@ -86,3 +108,16 @@ class BackupService:
                     "created_at": datetime.fromtimestamp(os.path.getmtime(full)),
                 })
         return files[:10]
+
+    @staticmethod
+    async def cleanup_old_backups(keep: int = 5) -> int:
+        """Delete old local backup files, keeping only the most recent `keep` files."""
+        backups = BackupService.list_backups()
+        deleted = 0
+        for b in backups[keep:]:
+            try:
+                os.remove(b["path"])
+                deleted += 1
+            except Exception as e:
+                log.warning("failed to delete old backup %s: %s", b["path"], e)
+        return deleted

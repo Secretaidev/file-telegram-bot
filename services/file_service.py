@@ -38,7 +38,7 @@ class FileService:
             message.document
             or message.video
             or message.audio
-            or message.photo[-1] if message.photo else None
+            or (message.photo[-1] if message.photo else None)
             or message.voice
             or message.video_note
             or message.sticker

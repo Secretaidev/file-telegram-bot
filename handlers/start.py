@@ -11,7 +11,7 @@ from middlewares import auth_middleware, check_membership, rate_limit_middleware
 from services import UserService, FileService, ShareService
 from utils import (
     main_menu, with_footer, format_size, format_dt,
-    channel_log, back_btn, time_left, premium_menu
+    channel_log, back_btn, time_left, premium_menu, search_filters
 )
 from config import cfg
 
@@ -159,8 +159,29 @@ async def cbq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
 
     elif action in ("files", "folders", "search", "vault", "links", "favorites"):
-        context.user_data["nav_section"] = action
-        await query.answer(f"ᴏᴘᴇɴɪɴɢ {action}…")
+        if action in ("files", "folders"):
+            from handlers.folder import _show_folder
+            await _show_folder(query, context, query.from_user.id, None, 0)
+
+        elif action == "search":
+            context.user_data["awaiting_search"] = True
+            await query.edit_message_text(
+                "🔍  <b>sᴇᴀʀᴄʜ ʏᴏᴜʀ ꜰɪʟᴇs</b>\n\nᴛʏᴘᴇ ᴀ ꜰɪʟᴇ ɴᴀᴍᴇ, ᴛᴀɢ, ᴏʀ ᴋᴇʏᴡᴏʀᴅ:",
+                reply_markup=search_filters(),
+                parse_mode="HTML",
+            )
+
+        elif action == "vault":
+            from handlers.vault import _show_vault_entry
+            await _show_vault_entry(update, context)
+
+        elif action == "links":
+            from handlers.share import _show_links_list
+            await _show_links_list(query, context, 0)
+
+        elif action == "favorites":
+            from handlers.favorites import _show_favorites
+            await _show_favorites(update, context, query.from_user.id, 0)
 
 
 async def _show_my_stats(query, context) -> None:

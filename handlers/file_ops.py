@@ -218,6 +218,5 @@ async def _prompt_move(q, context, file_db_id: str) -> None:
 
 def get_handlers():
     return [
-        CallbackQueryHandler(cbq_file_ops, pattern=r"^file:(send|fav|rename|delete|info|share|copy|move):"),
-        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_rename_input),
+        CallbackQueryHandler(cbq_file_ops, pattern=r"^file:(send|fav|rename|delete|delete_confirm|info|share|copy|move):"),
     ]

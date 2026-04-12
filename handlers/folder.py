@@ -140,5 +140,4 @@ async def handle_folder_name(update: Update, context: ContextTypes.DEFAULT_TYPE)
 def get_handlers():
     return [
         CallbackQueryHandler(cbq_folder, pattern=r"^folder:"),
-        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_folder_name),
     ]

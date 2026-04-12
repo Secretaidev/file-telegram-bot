@@ -56,10 +56,25 @@ async def _cleanup_deleted_files() -> None:
         log.info("hard deleted %d trashed files", result.deleted_count)
 
 
+async def _cleanup_old_logs() -> None:
+    """Delete MongoDB logs older than 7 days to keep server load low."""
+    from database import logs
+    cutoff = datetime.utcnow() - timedelta(days=7)
+    result = await logs().delete_many({"created_at": {"$lte": cutoff}})
+    if result.deleted_count:
+        log.info("auto-deleted %d old server logs", result.deleted_count)
+
+
 async def _auto_backup(bot: Bot) -> None:
     from services.backup_service import BackupService
     try:
         path = await BackupService.create_backup()
+        # send to configured backup channels
+        await BackupService.send_to_channels(bot, path)
+        # keep only the 5 most recent local backup files
+        deleted = await BackupService.cleanup_old_backups(keep=5)
+        if deleted:
+            log.info("cleaned up %d old local backup files", deleted)
         await system_log(bot, f"scheduled backup completed → {path}")
     except Exception as e:
         log.error("backup failed: %s", e)
@@ -70,6 +85,7 @@ def start(bot: Bot) -> None:
     _scheduler.add_job(_expire_links, IntervalTrigger(hours=1), id="expire_links")
     _scheduler.add_job(_expire_vault_sessions, IntervalTrigger(minutes=10), id="expire_vault")
     _scheduler.add_job(_cleanup_deleted_files, IntervalTrigger(hours=12), id="cleanup_files")
+    _scheduler.add_job(_cleanup_old_logs, IntervalTrigger(hours=24), id="cleanup_logs")
     _scheduler.add_job(
         lambda: asyncio.ensure_future(_auto_backup(bot)),
         IntervalTrigger(hours=cfg.BACKUP_INTERVAL_HOURS),

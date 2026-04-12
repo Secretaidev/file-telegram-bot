@@ -28,6 +28,9 @@ _SUPPORTED = (
 
 
 async def handle_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # let the payment screenshot handler deal with photos when awaiting payment
+    if context.user_data.get("awaiting_screenshot"):
+        return
     if not await auth_middleware(update, context):
         return
     if not await rate_limit_middleware(update, context):
