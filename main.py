@@ -64,10 +64,11 @@ def _register_handlers(app: Application) -> None:
 
     # Payment screenshot must be in a separate group so that handle_upload
     # (group 0) can return early when awaiting_screenshot is set, and this
-    # handler processes the photo instead.
+    # handler processes the photo instead. Group 6 avoids any overlap with
+    # the text-input groups (1-5).
     app.add_handler(
         MessageHandler(filters.PHOTO | filters.Document.IMAGE, handle_payment_screenshot),
-        group=1,
+        group=6,
     )
 
     log.info("all handlers registered")
