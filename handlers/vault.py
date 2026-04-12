@@ -157,6 +157,8 @@ async def _show_vault_files(q, context, user_id: int, page: int) -> None:
 
 
 async def handle_vault_input(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if context.user_data is None:
+        return
     state = context.user_data.get("vault_state")
     if not state:
         return

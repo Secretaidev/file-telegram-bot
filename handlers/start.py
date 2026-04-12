@@ -1,9 +1,10 @@
 """
-vault bot — start & menu handler
+sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ — start & menu handler
 entry point, deep-link resolver, main navigation
 """
 
 from __future__ import annotations
+import asyncio
 import logging
 from telegram import Update
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
@@ -12,25 +13,53 @@ from services import UserService, FileService, ShareService
 from utils import (
     main_menu, with_footer, format_size, format_dt,
     channel_log, back_btn, time_left, premium_menu, search_filters,
-    safe_edit
+    safe_edit, BOT_NAME, btn, row, build, url_btn
 )
 from config import cfg
 
 log = logging.getLogger(__name__)
 
 WELCOME = (
-    "╔══════════════════════════════╗\n"
-    "║      📦  <b>ᴠᴀᴜʟᴛ ʙᴏᴛ</b>           ║\n"
-    "║  ʏᴏᴜʀ ᴘʀɪᴠᴀᴛᴇ ᴛᴇʟᴇɢʀᴀᴍ ᴅʀɪᴠᴇ  ║\n"
-    "╚══════════════════════════════╝\n\n"
-    "ᴡᴇʟᴄᴏᴍᴇ, <b>{name}</b>!\n\n"
-    "• 📁  sᴛᴏʀᴇ & ᴏʀɢᴀɴɪᴢᴇ ᴀɴʏ ꜰɪʟᴇ\n"
-    "• 🔍  ꜰᴜʟʟ-ᴛᴇxᴛ sᴇᴀʀᴄʜ\n"
-    "• 🔐  ᴇɴᴄʀʏᴘᴛᴇᴅ ᴘʀɪᴠᴀᴛᴇ ᴠᴀᴜʟᴛ\n"
-    "• 🔗  sᴇᴄᴜʀᴇ sʜᴀʀᴇ ʟɪɴᴋs\n"
-    "• 💎  ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴs ᴀᴠᴀɪʟᴀʙʟᴇ\n\n"
-    "ᴄʜᴏᴏsᴇ ᴀɴ ᴏᴘᴛɪᴏɴ ʙᴇʟᴏᴡ ᴛᴏ ɢᴇᴛ sᴛᴀʀᴛᴇᴅ ↓"
+    "╔══════════════════════════════════╗\n"
+    "║  🔒 <b>sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ</b>  ║\n"
+    "║    ʏᴏᴜʀ ᴘʀɪᴠᴀᴛᴇ ᴄʟᴏᴜᴅ ᴠᴀᴜʟᴛ      ║\n"
+    "╚══════════════════════════════════╝\n\n"
+    "ᴡᴇʟᴄᴏᴍᴇ ʙᴀᴄᴋ, <b>{name}</b> 👋\n\n"
+    "🟢  sᴛᴏʀᴇ & ᴏʀɢᴀɴɪᴢᴇ ᴀɴʏ ꜰɪʟᴇ\n"
+    "🔵  ꜰᴜʟʟ-ᴛᴇxᴛ ꜰɪʟᴇ sᴇᴀʀᴄʜ\n"
+    "🔴  ᴇɴᴄʀʏᴘᴛᴇᴅ ᴘʀɪᴠᴀᴛᴇ ᴠᴀᴜʟᴛ\n"
+    "🟣  sᴇᴄᴜʀᴇ sʜᴀʀᴇ ʟɪɴᴋs\n"
+    "💎  ᴘʀᴇᴍɪᴜᴍ — ᴜɴʟɪᴍɪᴛᴇᴅ sᴛᴏʀᴀɢᴇ\n\n"
+    "ᴄʜᴏᴏsᴇ ᴀɴ ᴏᴘᴛɪᴏɴ ʙᴇʟᴏᴡ ↓"
 )
+
+# ── loading animation frames ──────────────────────────────────────────────────
+
+_FRAMES = [
+    ("⚡", "ʙᴏᴏᴛɪɴɢ sᴇᴄᴜʀᴇ ᴠᴀᴜʟᴛ",    10),
+    ("🔍", "sᴄᴀɴɴɪɴɢ ꜰɪʟᴇ sʏsᴛᴇᴍ",    25),
+    ("🔐", "ɪɴɪᴛɪᴀʟɪᴢɪɴɢ ᴇɴᴄʀʏᴘᴛɪᴏɴ", 45),
+    ("📡", "ᴄᴏɴɴᴇᴄᴛɪɴɢ ᴅᴀᴛᴀʙᴀsᴇ",      65),
+    ("🛡", "sᴇᴄᴜʀɪɴɢ sᴇssɪᴏɴ",          85),
+    ("✅", "ʀᴇᴀᴅʏ!",                    100),
+]
+
+
+def _progress_bar(pct: int) -> str:
+    filled = pct // 10
+    bar = "█" * filled + "░" * (10 - filled)
+    return f"[{bar}] {pct}%"
+
+
+async def _show_loading(message) -> None:
+    """Animate a loading progress bar through all frames."""
+    for icon, label, pct in _FRAMES:
+        text = f"{icon}  <b>{label}…</b>\n\n<code>{_progress_bar(pct)}</code>"
+        try:
+            await message.edit_text(text, parse_mode="HTML")
+        except Exception:
+            pass
+        await asyncio.sleep(0.35)
 
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -50,13 +79,23 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             await _handle_deep_link(update, context, payload[3:])
             return
 
+    # loading animation
+    loading_msg = await update.message.reply_text(
+        f"⚡  <b>ʙᴏᴏᴛɪɴɢ sᴇᴄᴜʀᴇ ᴠᴀᴜʟᴛ…</b>\n\n<code>{_progress_bar(0)}</code>",
+        parse_mode="HTML",
+    )
+    await _show_loading(loading_msg)
+
     is_premium = await UserService.is_premium(user.id)
     is_admin = cfg.is_admin(user.id)
 
     text = with_footer(WELCOME.format(name=user.first_name))
     markup = main_menu(is_premium=is_premium, is_admin=is_admin)
 
-    await update.message.reply_text(text, reply_markup=markup, parse_mode="HTML")
+    try:
+        await loading_msg.edit_text(text, reply_markup=markup, parse_mode="HTML")
+    except Exception:
+        await update.message.reply_text(text, reply_markup=markup, parse_mode="HTML")
 
     await channel_log(
         context.bot, "join", user.id, user.username,
@@ -100,13 +139,15 @@ async def _deliver_shared_file(update: Update, context: ContextTypes.DEFAULT_TYP
     caption = (
         f"{icon}  <b>{file_doc['file_name']}</b>\n"
         f"├ sɪᴢᴇ: {format_size(file_doc.get('file_size', 0))}\n"
-        f"└ sʜᴀʀᴇᴅ ꜰɪʟᴇ ᴠɪᴀ ᴠᴀᴜʟᴛ ʙᴏᴛ"
+        f"└ sʜᴀʀᴇᴅ ᴠɪᴀ sᴇᴄʀᴇᴛ ꜰɪʟᴇ sᴛᴏʀᴀɢᴇ ʙᴏᴛ"
     )
+
+    storage_channel = file_doc.get("storage_channel_id") or cfg.STORAGE_CHANNEL_ID
 
     try:
         await context.bot.copy_message(
             chat_id=update.effective_chat.id,
-            from_chat_id=cfg.STORAGE_CHANNEL_ID,
+            from_chat_id=storage_channel,
             message_id=file_doc["message_id"],
             caption=with_footer(caption),
             parse_mode="HTML",
@@ -199,8 +240,15 @@ async def _show_my_stats(query, context) -> None:
     storage = user.get("storage_used", 0)
     is_premium = user.get("role") in ("premium", "admin", "owner")
     limit = cfg.PREMIUM_STORAGE_LIMIT if is_premium else cfg.FREE_STORAGE_LIMIT
-    pct = min(100, round(storage / limit * 100)) if limit else 0
-    bar = ("█" * (pct // 10)) + ("░" * (10 - pct // 10))
+
+    if limit == 0:
+        pct = 0
+        bar = "░" * 10
+        limit_str = "∞ ᴜɴʟɪᴍɪᴛᴇᴅ"
+    else:
+        pct = min(100, round(storage / limit * 100)) if limit else 0
+        bar = ("█" * (pct // 10)) + ("░" * (10 - pct // 10))
+        limit_str = format_size(limit)
 
     role_badge = {
         "owner":   "👑 ᴏᴡɴᴇʀ",
@@ -213,8 +261,8 @@ async def _show_my_stats(query, context) -> None:
         f"📊  <b>ᴍʏ sᴛᴀᴛs</b>\n\n"
         f"├ ᴘʟᴀɴ:    {role_badge}\n"
         f"├ ꜰɪʟᴇs:   {total_files}\n"
-        f"├ sᴛᴏʀᴀɢᴇ: {format_size(storage)} / {format_size(limit)}\n"
-        f"├ ᴜsᴀɢᴇ:   [{bar}] {pct}%\n"
+        f"├ sᴛᴏʀᴀɢᴇ: {format_size(storage)} / {limit_str}\n"
+        f"├ ᴜsᴀɢᴇ:   [{bar}] {'∞' if limit == 0 else f'{pct}%'}\n"
         f"└ ᴊᴏɪɴᴇᴅ:  {format_dt(user['joined_at'])}"
     )
     await safe_edit(query, with_footer(text), reply_markup=back_btn("menu:start"), parse_mode="HTML")
@@ -224,58 +272,75 @@ def _premium_text(is_premium: bool) -> str:
     if is_premium:
         return (
             "💎  <b>ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴇ</b>\n\n"
-            "✅ ᴜɴʟɪᴍɪᴛᴇᴅ ᴠᴀᴜʟᴛ ᴀᴄᴄᴇss\n"
+            "✅ ᴜɴʟɪᴍɪᴛᴇᴅ sᴛᴏʀᴀɢᴇ\n"
             "✅ 2 ɢʙ ᴜᴘʟᴏᴀᴅ ʟɪᴍɪᴛ\n"
-            "✅ 10 ɢʙ sᴛᴏʀᴀɢᴇ\n"
             "✅ ᴀᴅᴠᴀɴᴄᴇᴅ sᴇᴀʀᴄʜ ꜰɪʟᴛᴇʀs\n"
             "✅ ʙᴜʟᴋ ᴏᴘᴇʀᴀᴛɪᴏɴs\n"
             "✅ ᴘʀɪᴏʀɪᴛʏ sᴜᴘᴘᴏʀᴛ"
         )
     return (
         "💎  <b>ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
-        "<b>ꜰʀᴇᴇ ᴘʟᴀɴ</b>\n"
+        "<b>🆓 ꜰʀᴇᴇ ᴘʟᴀɴ</b>\n"
         "• 500 ᴍʙ sᴛᴏʀᴀɢᴇ\n"
-        "• 20 ᴍʙ ᴜᴘʟᴏᴀᴅ ʟɪᴍɪᴛ\n"
-        "• ʙᴀsɪᴄ sᴇᴀʀᴄʜ\n\n"
+        "• 20 ᴍʙ ᴜᴘʟᴏᴀᴅ ʟɪᴍɪᴛ\n\n"
         "<b>💎 ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴ</b>\n"
-        "• 10 ɢʙ sᴛᴏʀᴀɢᴇ\n"
+        "• ∞ ᴜɴʟɪᴍɪᴛᴇᴅ sᴛᴏʀᴀɢᴇ\n"
         "• 2 ɢʙ ᴜᴘʟᴏᴀᴅ ʟɪᴍɪᴛ\n"
-        "• ᴀʟʟ ꜰᴇᴀᴛᴜʀᴇs ᴜɴʟᴏᴄᴋᴇᴅ\n"
-        "• ᴘʀɪᴏʀɪᴛʏ sᴜᴘᴘᴏʀᴛ\n\n"
+        "• ᴀʟʟ ꜰᴇᴀᴛᴜʀᴇs ᴜɴʟᴏᴄᴋᴇᴅ\n\n"
         "<b>ᴘʀɪᴄɪɴɢ</b>\n"
-        "• ᴍᴏɴᴛʜʟʏ: ₹99/ᴍᴏɴᴛʜ\n"
-        "• ʏᴇᴀʀʟʏ:  ₹799/ʏᴇᴀʀ (save 32%)"
+        "• ᴍᴏɴᴛʜʟʏ: ₹99  |  ʏᴇᴀʀʟʏ: ₹799"
     )
 
 
 async def _show_help(query) -> None:
+    is_premium = await UserService.is_premium(query.from_user.id)
+    premium_note = "💎 <i>ᴘʀᴇᴍɪᴜᴍ</i>" if is_premium else "🆓 <i>ꜰʀᴇᴇ — /premium ᴜᴘɢʀᴀᴅᴇ</i>"
+
     text = (
-        "❓  <b>ʜᴇʟᴘ & ᴄᴏᴍᴍᴀɴᴅs</b>\n\n"
-        "/start — ᴍᴀɪɴ ᴍᴇɴᴜ\n"
-        "/upload — ᴜᴘʟᴏᴀᴅ ᴀ ꜰɪʟᴇ\n"
-        "/search — sᴇᴀʀᴄʜ ʏᴏᴜʀ ꜰɪʟᴇs\n"
-        "/vault — ᴏᴘᴇɴ ᴇɴᴄʀʏᴘᴛᴇᴅ ᴠᴀᴜʟᴛ\n"
-        "/premium — ᴜᴘɢʀᴀᴅᴇ ᴘʟᴀɴ\n"
-        "/stats — ᴍʏ ᴀᴄᴄᴏᴜɴᴛ ɪɴꜰᴏ\n\n"
-        "ᴛᴏ ᴜᴘʟᴏᴀᴅ ᴀ ꜰɪʟᴇ, ᴊᴜsᴛ sᴇɴᴅ ɪᴛ ᴛᴏ ᴛʜᴇ ʙᴏᴛ ᴅɪʀᴇᴄᴛʟʏ.\n"
-        "ᴛᴏ sᴇᴀʀᴄʜ, sᴇɴᴅ ᴀɴʏ ᴛᴇxᴛ ᴏʀ ᴜsᴇ /search."
+        f"🔒  <b>sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ</b>\n"
+        f"<i>ᴄᴏᴍᴍᴀɴᴅs ɢᴜɪᴅᴇ</i>  ·  {premium_note}\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "📁  <b>/start</b>  —  ᴍᴀɪɴ ᴍᴇɴᴜ\n"
+        "📤  <b>/upload</b>  —  ᴜᴘʟᴏᴀᴅ ᴀ ꜰɪʟᴇ\n"
+        "🔍  <b>/search</b>  —  sᴇᴀʀᴄʜ ꜰɪʟᴇs\n"
+        "🔐  <b>/vault</b>  —  ᴇɴᴄʀʏᴘᴛᴇᴅ ᴠᴀᴜʟᴛ\n"
+        "💎  <b>/premium</b>  —  ᴘʀᴇᴍɪᴜᴍ ᴘʟᴀɴs\n"
+        "📊  <b>/stats</b>  —  sᴛᴏʀᴀɢᴇ ɪɴꜰᴏ\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n\n"
+        "💡  sᴇɴᴅ ᴀɴʏ ꜰɪʟᴇ ᴅɪʀᴇᴄᴛʟʏ ᴛᴏ ᴜᴘʟᴏᴀᴅ\n"
+        "🏷  ᴀᴅᴅ <code>#ᴛᴀɢ</code> ɪɴ ᴄᴀᴘᴛɪᴏɴ ᴛᴏ ᴀᴜᴛᴏ-ᴛᴀɢ"
     )
-    await safe_edit(query, with_footer(text), reply_markup=back_btn("menu:start"), parse_mode="HTML")
+
+    markup = build(
+        row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
+        row(
+            url_btn("👨‍💻  @its_me_secret",    "https://t.me/its_me_secret"),
+            url_btn("🆘  @song_assistant", "https://t.me/song_assistant"),
+        ),
+    )
+    await safe_edit(query, with_footer(text), reply_markup=markup, parse_mode="HTML")
 
 
 async def _show_about(query) -> None:
     text = (
-        "ℹ️  <b>ᴀʙᴏᴜᴛ ᴠᴀᴜʟᴛ ʙᴏᴛ</b>\n\n"
-        "ᴀ ᴘʀᴏᴅᴜᴄᴛɪᴏɴ-ɢʀᴀᴅᴇ ᴛᴇʟᴇɢʀᴀᴍ ꜰɪʟᴇ\n"
-        "sᴛᴏʀᴀɢᴇ & ᴍᴀɴᴀɢᴇᴍᴇɴᴛ sʏsᴛᴇᴍ.\n\n"
-        "• ꜰɪʟᴇ sᴛᴏʀᴀɢᴇ ᴇɴɢɪɴᴇ\n"
-        "• ᴇɴᴄʀʏᴘᴛᴇᴅ ᴘʀɪᴠᴀᴛᴇ ᴠᴀᴜʟᴛ\n"
-        "• ᴄᴅɴ-sᴛʏʟᴇ sʜᴀʀɪɴɢ\n"
-        "• ᴘʀᴇᴍɪᴜᴍ sᴜʙsᴄʀɪᴘᴛɪᴏɴs\n\n"
-        "ᴠᴇʀsɪᴏɴ: 2.0.0\n"
-        "ᴛᴇᴄʜ: ᴘʏᴛʜᴏɴ · ᴍᴏɴɢᴏᴅʙ · ᴛᴇʟᴇɢʀᴀᴍ"
+        "🔒  <b>sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ</b>\n\n"
+        "ᴘʀᴇᴍɪᴜᴍ ᴛᴇʟᴇɢʀᴀᴍ ꜰɪʟᴇ sᴛᴏʀᴀɢᴇ &\n"
+        "ᴍᴀɴᴀɢᴇᴍᴇɴᴛ ꜰᴏʀ ᴇᴠᴇʀʏᴏɴᴇ.\n\n"
+        "• ᴇɴᴄʀʏᴘᴛᴇᴅ ᴠᴀᴜʟᴛ sᴛᴏʀᴀɢᴇ\n"
+        "• ᴍᴜʟᴛɪ-ᴄʜᴀɴɴᴇʟ ᴅɪsᴛʀɪʙᴜᴛᴇᴅ ʙᴀᴄᴋᴜᴘs\n"
+        "• ᴄᴅɴ-sᴛʏʟᴇ sᴇᴄᴜʀᴇ sʜᴀʀɪɴɢ\n"
+        "• ᴀɪ-ᴘᴏᴡᴇʀᴇᴅ ᴀssɪsᴛᴀɴᴄᴇ\n"
+        "• ᴘʀᴇᴍɪᴜᴍ ᴜɴʟɪᴍɪᴛᴇᴅ sᴛᴏʀᴀɢᴇ\n\n"
+        "ᴠᴇʀsɪᴏɴ: 3.0.0  ·  ᴘʏᴛʜᴏɴ · ᴍᴏɴɢᴏᴅʙ"
     )
-    await safe_edit(query, with_footer(text), reply_markup=back_btn("menu:start"), parse_mode="HTML")
+    markup = build(
+        row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
+        row(
+            url_btn("👨‍💻  @its_me_secret",    "https://t.me/its_me_secret"),
+            url_btn("🆘  @song_assistant", "https://t.me/song_assistant"),
+        ),
+    )
+    await safe_edit(query, with_footer(text), reply_markup=markup, parse_mode="HTML")
 
 
 async def cbq_check_joined(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

@@ -29,6 +29,7 @@ class FileService:
         is_vault: bool = False,
         tags: Optional[List[str]] = None,
         storage_msg_id: Optional[int] = None,
+        storage_channel_id: int = 0,
     ) -> Tuple[Optional[Dict[str, Any]], bool]:
         """
         saves a telegram file to the database.
@@ -93,6 +94,7 @@ class FileService:
             category=category,
             is_vault=is_vault,
             caption=message.caption,
+            storage_channel_id=storage_channel_id or cfg.STORAGE_CHANNEL_ID,
         )
 
         result = await files().insert_one(doc)

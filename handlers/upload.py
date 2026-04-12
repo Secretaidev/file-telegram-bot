@@ -1,10 +1,11 @@
 """
-vault bot — upload handler
+sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ — upload handler
 handles incoming files, stores to storage channel, saves metadata
 """
 
 from __future__ import annotations
 import logging
+import random
 from telegram import Update, Message
 from telegram.ext import ContextTypes, MessageHandler, filters, CommandHandler
 from middlewares import auth_middleware, check_membership, rate_limit_middleware
@@ -59,7 +60,8 @@ async def handle_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
     file_size = getattr(attachment, "file_size", 0) or 0
 
-    if file_size > upload_limit:
+    # 0 = unlimited; only enforce when limit > 0
+    if upload_limit > 0 and file_size > upload_limit:
         await message.reply_text(
             f"❌ ꜰɪʟᴇ ᴛᴏᴏ ʟᴀʀɢᴇ.\n\n"
             f"ʏᴏᴜʀ ʟɪᴍɪᴛ: <b>{format_size(upload_limit)}</b>\n"
@@ -70,7 +72,7 @@ async def handle_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         return
 
     storage_used = await UserService.get_storage_used(user.id)
-    if storage_used + file_size > storage_limit:
+    if storage_limit > 0 and storage_used + file_size > storage_limit:
         await message.reply_text(
             f"❌ sᴛᴏʀᴀɢᴇ ꜰᴜʟʟ.\n\n"
             f"ᴜsᴇᴅ: <b>{format_size(storage_used)}</b> / {format_size(storage_limit)}\n"
@@ -85,8 +87,17 @@ async def handle_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         folder_id = context.user_data.get("upload_folder_id")
         is_vault = context.user_data.get("upload_to_vault", False)
 
+        # pick a storage channel — distributes files across all configured channels
+        channels = cfg.all_storage_channels()
+        if not channels:
+            await processing_msg.edit_text(
+                "❌ ɴᴏ sᴛᴏʀᴀɢᴇ ᴄʜᴀɴɴᴇʟ ᴄᴏɴꜰɪɢᴜʀᴇᴅ. ᴄᴏɴᴛᴀᴄᴛ ᴀᴅᴍɪɴ."
+            )
+            return
+        storage_channel = random.choice(channels)
+
         storage_msg = await context.bot.copy_message(
-            chat_id=cfg.STORAGE_CHANNEL_ID,
+            chat_id=storage_channel,
             from_chat_id=message.chat_id,
             message_id=message.message_id,
         )
@@ -100,6 +111,7 @@ async def handle_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             is_vault=is_vault,
             tags=tags,
             storage_msg_id=storage_msg.message_id,
+            storage_channel_id=storage_channel,
         )
 
         if not doc:

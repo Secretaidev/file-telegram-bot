@@ -85,9 +85,10 @@ async def _send_file(q, context, file_db_id: str) -> None:
     caption = with_footer(f"{icon}  <b>{doc['file_name']}</b>\n{format_size(doc.get('file_size',0))}")
 
     try:
+        storage_channel = doc.get("storage_channel_id") or cfg.STORAGE_CHANNEL_ID
         await context.bot.copy_message(
             chat_id=q.from_user.id,
-            from_chat_id=cfg.STORAGE_CHANNEL_ID,
+            from_chat_id=storage_channel,
             message_id=doc["message_id"],
             caption=caption,
             parse_mode="HTML",

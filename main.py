@@ -72,6 +72,11 @@ def _register_handlers(app: Application) -> None:
         group=6,
     )
 
+    # AI assistant — group 10 so all state-based handlers (1-7) run first.
+    # The AI handler itself checks for active states before replying.
+    for handler in handlers.ai.get_handlers():
+        app.add_handler(handler, group=10)
+
     log.info("all handlers registered")
 
 
