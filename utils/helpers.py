@@ -109,14 +109,29 @@ def suggest_name(original: str, mime_type: str) -> str:
 
 # ── upi payment link ──────────────────────────────────────────────────────────
 
+def upi_display_id() -> str:
+    """Return the UPI ID for display (copy-paste by user)."""
+    return cfg.UPI_ID
+
+
 def upi_link(amount: float, note: str = "vault premium") -> str:
-    return (
-        f"upi://pay?pa={cfg.UPI_ID}"
-        f"&pn={cfg.UPI_NAME.replace(' ', '%20')}"
-        f"&am={amount}"
-        f"&tn={note.replace(' ', '%20')}"
-        f"&cu=INR"
-    )
+    """
+    Build a UPI redirect URL accepted by Telegram inline buttons.
+
+    The raw ``upi://`` scheme is rejected by Telegram's bot API as an
+    unsupported protocol. We instead produce a standard HTTPS link to the
+    BHIM/UPI payment page which is accepted by Telegram and correctly opens
+    UPI apps on both Android and iOS when tapped.
+    """
+    import urllib.parse
+    params = urllib.parse.urlencode({
+        "pa": cfg.UPI_ID,
+        "pn": cfg.UPI_NAME,
+        "am": amount,
+        "tn": note,
+        "cu": "INR",
+    })
+    return f"https://upi.sbi.co.in/pay?{params}"
 
 
 def gpay_link(amount: float, note: str = "vault premium") -> str:
@@ -160,6 +175,7 @@ async def safe_edit(query_or_message, text: str, **kwargs) -> None:
 
 # ── footer ────────────────────────────────────────────────────────────────────
 
+BOT_NAME = cfg.BOT_NAME
 FOOTER = f"\n\n<i>{cfg.FOOTER}</i>"
 
 

@@ -1,6 +1,6 @@
 """
-vault bot — premium & payment handler
-plan selection, gpay/upi payment, screenshot submission, admin approval
+sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ — premium & payment handler
+plan selection, upi payment instructions, screenshot submission, admin approval
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from services import SubscriptionService, UserService
 from utils import (
     premium_menu, payment_plan_select, payment_admin_review,
     with_footer, format_dt, time_left, channel_log, back_btn,
-    gpay_link, btn, row, build, url_btn
+    btn, row, build, url_btn, upi_display_id
 )
 from config import cfg
 
@@ -84,20 +84,32 @@ async def cbq_premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             parse_mode="HTML",
         )
 
+    elif action == "paid":
+        await q.answer()
+        context.user_data["awaiting_screenshot"] = True
+        await q.edit_message_text(
+            with_footer(
+                "📸  <b>sᴇɴᴅ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ</b>\n\n"
+                "ᴘʟᴇᴀsᴇ sᴇɴᴅ ᴛʜᴇ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ ɴᴏᴡ.\n"
+                "ᴡᴇ ᴡɪʟʟ ᴠᴇʀɪꜰʏ ᴀɴᴅ ᴀᴄᴛɪᴠᴀᴛᴇ ʏᴏᴜʀ ᴘʟᴀɴ\n"
+                "ᴡɪᴛʜɪɴ 24 ʜᴏᴜʀs."
+            ),
+            reply_markup=back_btn("menu:premium"),
+            parse_mode="HTML",
+        )
+
 
 async def _show_payment_instructions(q, context, plan: str) -> None:
-    plan_data = SubscriptionService.PLANS.get(plan, SubscriptionService.PLANS["monthly"]) if hasattr(SubscriptionService, 'PLANS') else {"label": plan, "days": 30, "amount": 99}
     from services.subscription_service import PLANS
     plan_data = PLANS.get(plan, PLANS["monthly"])
     amount = plan_data["amount"]
-    upi = gpay_link(amount, note=f"vault {plan}")
 
     context.user_data["payment_plan"] = plan
     context.user_data["payment_amount"] = amount
     context.user_data["awaiting_screenshot"] = True
 
     markup = build(
-        row(url_btn(f"💳  ᴘᴀʏ ₹{amount} ᴠɪᴀ ᴜᴘɪ/ɢᴘᴀʏ", upi)),
+        row(btn("📸  ɪ'ᴠᴇ ᴘᴀɪᴅ — sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ", "premium:paid")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:premium")),
     )
 
@@ -105,13 +117,18 @@ async def _show_payment_instructions(q, context, plan: str) -> None:
         f"💳  <b>ᴘᴀʏᴍᴇɴᴛ ɪɴsᴛʀᴜᴄᴛɪᴏɴs</b>\n\n"
         f"ᴘʟᴀɴ:   <b>{plan_data['label']}</b>\n"
         f"ᴀᴍᴏᴜɴᴛ: <b>₹{amount}</b>\n\n"
-        f"<b>sᴛᴇᴘ 1:</b> ᴛᴀᴘ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ ᴛᴏ ᴘᴀʏ.\n\n"
-        f"ᴜᴘɪ ɪᴅ: <code>{cfg.UPI_ID}</code>\n\n"
-        f"<b>sᴛᴇᴘ 2:</b> ᴀꜰᴛᴇʀ ᴘᴀʏᴍᴇɴᴛ, sᴇɴᴅ ᴛʜᴇ\n"
-        f"ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ ᴅɪʀᴇᴄᴛʟʏ ʜᴇʀᴇ.\n\n"
-        f"⏳ ᴀᴘᴘʀᴏᴠᴀʟ ᴡɪᴛʜɪɴ 24 ʜᴏᴜʀs."
+        f"━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"<b>1️⃣  ᴏᴘᴇɴ ᴀɴʏ ᴜᴘɪ ᴀᴘᴘ</b>\n"
+        f"<i>GPay · PhonePe · Paytm · BHIM</i>\n\n"
+        f"<b>2️⃣  ᴘᴀʏ ᴛᴏ ᴜᴘɪ ɪᴅ:</b>\n"
+        f"<code>{cfg.UPI_ID}</code>\n\n"
+        f"ᴀᴍᴏᴜɴᴛ: <b>₹{amount}</b>\n"
+        f"ɴᴏᴛᴇ: <i>{plan_data['label']} premium</i>\n\n"
+        f"<b>3️⃣  ᴛᴀᴘ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ & sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ</b>\n\n"
+        f"⏳ <i>ᴀᴄᴛɪᴠᴀᴛɪᴏɴ ᴡɪᴛʜɪɴ 24 ʜᴏᴜʀs.</i>"
     )
     await q.edit_message_text(with_footer(text), reply_markup=markup, parse_mode="HTML")
+
 
 
 async def handle_payment_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -256,10 +273,14 @@ async def cbq_pay(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 def _build_premium_text(is_premium: bool) -> str:
     if is_premium:
-        return "💎  <b>ʏᴏᴜ ᴀʀᴇ ᴀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀ</b> 🎉\n\nᴀʟʟ ꜰᴇᴀᴛᴜʀᴇs ᴜɴʟᴏᴄᴋᴇᴅ."
+        return (
+            "💎  <b>ʏᴏᴜ ᴀʀᴇ ᴀ ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀ</b> 🎉\n\n"
+            "✅ ᴜɴʟɪᴍɪᴛᴇᴅ sᴛᴏʀᴀɢᴇ ᴜɴʟᴏᴄᴋᴇᴅ!"
+        )
     return (
         "💎  <b>ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
-        "ᴜɴʟᴏᴄᴋ ᴛʜᴇ ꜰᴜʟʟ ᴘᴏᴡᴇʀ ᴏꜰ ᴠᴀᴜʟᴛ ʙᴏᴛ.\n\n"
+        "ᴜɴʟᴏᴄᴋ ᴛʜᴇ ꜰᴜʟʟ ᴘᴏᴡᴇʀ ᴏꜰ\n"
+        "🔒 sᴇᴄʀᴇᴛ ꜰɪʟᴇ sᴛᴏʀᴀɢᴇ ʙᴏᴛ.\n\n"
         "💳 <b>ᴘᴀʏ ᴠɪᴀ ɢᴘᴀʏ / ᴘʜᴏɴᴇᴘᴇ / ᴀɴʏ ᴜᴘɪ</b>"
     )
 
@@ -270,13 +291,14 @@ def _compare_text() -> str:
         "<code>"
         "ꜰᴇᴀᴛᴜʀᴇ          ꜰʀᴇᴇ      ᴘʀᴇᴍɪᴜᴍ\n"
         "─────────────────────────────────\n"
-        "sᴛᴏʀᴀɢᴇ          500 ᴍʙ    10 ɢʙ\n"
+        "sᴛᴏʀᴀɢᴇ          500 ᴍʙ    ∞ ᴜɴʟɪᴍɪᴛᴇᴅ\n"
         "ᴜᴘʟᴏᴀᴅ ʟɪᴍɪᴛ     20 ᴍʙ    2 ɢʙ\n"
         "ᴠᴀᴜʟᴛ ꜰɪʟᴇs       5         ∞\n"
         "sʜᴀʀᴇ ʟɪɴᴋs       3         ∞\n"
         "ᴀᴅᴠ. ꜰɪʟᴛᴇʀs       ✗        ✓\n"
         "ʙᴜʟᴋ ᴏᴘs           ✗        ✓\n"
         "ᴘʀɪᴏʀɪᴛʏ sᴜᴘᴘᴏʀᴛ  ✗        ✓\n"
+        "ᴀɪ ᴀssɪsᴛᴀɴᴄᴇ     ✗        ✓\n"
         "</code>"
     )
 
