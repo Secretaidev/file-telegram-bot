@@ -131,7 +131,8 @@ def upi_link(amount: float, note: str = "vault premium") -> str:
         "tn": note,
         "cu": "INR",
     })
-    return f"https://upi.sbi.co.in/pay?{params}"
+    # bhim.gov.in is the official NPCI UPI gateway — accepted by Telegram
+    return f"https://bhim.gov.in/pay?{params}"
 
 
 def gpay_link(amount: float, note: str = "vault premium") -> str:

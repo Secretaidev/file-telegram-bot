@@ -98,11 +98,15 @@ class Config:
         return user_id == self.OWNER_ID
 
     def all_storage_channels(self) -> List[int]:
-        """Return all storage channel IDs, falling back to STORAGE_CHANNEL_ID."""
-        channels = list(self.STORAGE_CHANNEL_IDS)
-        if self.STORAGE_CHANNEL_ID and self.STORAGE_CHANNEL_ID not in channels:
-            channels.append(self.STORAGE_CHANNEL_ID)
-        return channels or ([self.STORAGE_CHANNEL_ID] if self.STORAGE_CHANNEL_ID else [])
+        """Return all storage channel IDs, falling back to STORAGE_CHANNEL_ID.
+        Always returns at least one entry if any channel is configured."""
+        seen: set = set()
+        result: List[int] = []
+        for ch in list(self.STORAGE_CHANNEL_IDS) + ([self.STORAGE_CHANNEL_ID] if self.STORAGE_CHANNEL_ID else []):
+            if ch and ch not in seen:
+                seen.add(ch)
+                result.append(ch)
+        return result
 
 
 cfg = Config()

@@ -59,7 +59,7 @@ async def _ask_grok(user_message: str, history: list) -> Optional[str]:
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.post(_GROK_URL, json=payload, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+            async with session.post(_GROK_URL, json=payload, headers=headers, timeout=aiohttp.ClientTimeout(total=8)) as resp:
                 if resp.status == 200:
                     data = await resp.json()
                     return data["choices"][0]["message"]["content"].strip()
@@ -97,7 +97,12 @@ async def handle_ai_dm(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
 
     text = (update.message.text or "").strip()
-    if not text or len(text) > 1000:
+    if not text:
+        return
+    if len(text) > 1000:
+        await update.message.reply_text(
+            "✂️ ᴍᴇssᴀɢᴇ ᴛᴏᴏ ʟᴏɴɢ. ᴘʟᴇᴀsᴇ ᴋᴇᴇᴘ ɪᴛ ᴜɴᴅᴇʀ 1000 ᴄʜᴀʀs."
+        )
         return
 
     # only reply if GROK_API_KEY is configured

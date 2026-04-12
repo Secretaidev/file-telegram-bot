@@ -89,7 +89,12 @@ async def handle_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
         # pick a storage channel — distributes files across all configured channels
         channels = cfg.all_storage_channels()
-        storage_channel = random.choice(channels) if channels else cfg.STORAGE_CHANNEL_ID
+        if not channels:
+            await processing_msg.edit_text(
+                "❌ ɴᴏ sᴛᴏʀᴀɢᴇ ᴄʜᴀɴɴᴇʟ ᴄᴏɴꜰɪɢᴜʀᴇᴅ. ᴄᴏɴᴛᴀᴄᴛ ᴀᴅᴍɪɴ."
+            )
+            return
+        storage_channel = random.choice(channels)
 
         storage_msg = await context.bot.copy_message(
             chat_id=storage_channel,
