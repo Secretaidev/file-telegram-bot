@@ -1,13 +1,19 @@
 <div align="center">
 
 ```
-██╗   ██╗ █████╗ ██╗   ██╗██╗  ████████╗    ██████╗  ██████╗ ████████╗
-██║   ██║██╔══██╗██║   ██║██║  ╚══██╔══╝    ██╔══██╗██╔═══██╗╚══██╔══╝
-██║   ██║███████║██║   ██║██║     ██║       ██████╔╝██║   ██║   ██║   
-╚██╗ ██╔╝██╔══██║██║   ██║██║     ██║       ██╔══██╗██║   ██║   ██║   
- ╚████╔╝ ██║  ██║╚██████╔╝███████╗██║       ██████╔╝╚██████╔╝   ██║   
-  ╚═══╝  ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝       ╚═════╝  ╚═════╝    ╚═╝   
+ ____  _____ ____ ____  _____ _____   _____ ___ _     _____
+/ ___|| ____/ ___|  _ \| ____|_   _| |  ___|_ _| |   | ____|
+\___ \|  _|| |   | |_) |  _|   | |   | |_   | || |   |  _|
+ ___) | |__| |___|  _ <| |___  | |   |  _|  | || |___| |___
+|____/|_____\____|_| \_\_____| |_|   |_|   |___|_____|_____|
+ ____ _____ ___  ____      _    ____ _____   ____   ___ _____
+/ ___|_   _/ _ \|  _ \    / \  / ___| ____| | __ ) / _ \_   _|
+\___ \ | || | | | |_) |  / _ \| |  _|  _|   |  _ \| | | || |
+ ___) || || |_| |  _ <  / ___ \ |_| | |___  | |_) | |_| || |
+|____/ |_| \___/|_| \_\/_/   \_\____|_____| |____/ \___/ |_|
 ```
+
+# 🔒 **sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ**
 
 **Production-Grade Telegram File Storage & Management System**
 
@@ -24,7 +30,7 @@
 
 ## ✦ Overview
 
-**Vault Bot** is an enterprise-level, fully async Telegram file storage system built with `python-telegram-bot v21+` and MongoDB. It combines the power of Google Drive, a search engine, an encrypted personal vault, a CDN-style file sharing service, and a SaaS admin dashboard — all inside Telegram.
+**sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ** is an enterprise-level, fully async Telegram file storage system built with `python-telegram-bot v21+` and MongoDB. It combines the power of Google Drive, a search engine, an encrypted personal vault, a CDN-style file sharing service, and a SaaS admin dashboard — all inside Telegram.
 
 Every interaction is keyboard-driven, every UI element uses **small-caps Unicode**, and every feature is production-ready with proper error handling, logging, and modular architecture.
 
@@ -50,7 +56,7 @@ Every interaction is keyboard-driven, every UI element uses **small-caps Unicode
 | | Expiry control | ✓ | ✓ |
 | | One-time download links | ✗ | ✓ |
 | | Password-protected links | ✗ | ✓ |
-| **Premium** | Subscription plans | — | ₹99/mo · ₹799/yr |
+| **Premium** | Subscription plans | — | ₹39/yr |
 | | GPay / UPI payment | ✓ | — |
 | | Admin approval workflow | — | ✓ |
 | **Admin** | Broadcast messages | — | ✓ |
@@ -66,7 +72,7 @@ Every interaction is keyboard-driven, every UI element uses **small-caps Unicode
 ## ✦ Architecture
 
 ```
-telegram-vault-bot/
+telegram-secret-file-bot/
 │
 ├── main.py                    # application entry, handler registration, lifecycle
 ├── config.py                  # centralised env config (dataclass, frozen)
@@ -138,8 +144,8 @@ A private Telegram channel for logs
 ### 2 · Installation
 
 ```bash
-git clone https://github.com/youruser/telegram-vault-bot
-cd telegram-vault-bot
+git clone https://github.com/Secretaidev/file-telegram-bot
+cd file-telegram-bot
 
 python -m venv venv
 source venv/bin/activate       # Windows: venv\Scripts\activate
@@ -162,23 +168,59 @@ Key variables:
 | `OWNER_ID` | Your Telegram user ID |
 | `ADMIN_IDS` | Comma-separated admin IDs |
 | `MONGO_URI` | MongoDB connection string |
-| `STORAGE_CHANNEL_ID` | Private channel ID (with `-100` prefix) |
+| `STORAGE_CHANNEL_ID` | Primary private channel ID (with `-100` prefix) |
+| `STORAGE_CHANNEL_IDS` | **Multi-channel** — comma-separated IDs e.g. `-100AAA,-100BBB,-100CCC,-100DDD` |
 | `LOG_CHANNEL_ID` | Private log channel ID |
 | `REQUIRED_CHANNELS` | e.g. `secretsbotz` (no @) |
 | `UPI_ID` | Your GPay/UPI ID e.g. `yourname@gpay` |
+| `GROK_API_KEY` | xAI Grok API key — get free at [console.x.ai](https://console.x.ai/) |
 
-### 4 · Storage Channel Setup
+### 4 · Multi-Channel Storage Setup (Recommended)
 
-1. Create a private Telegram channel
-2. Add your bot as **admin** with post permissions
-3. Copy the channel ID (format: `-100XXXXXXXXXX`)
-4. Set it as `STORAGE_CHANNEL_ID` in `.env`
+Using multiple storage channels lets the bot distribute files across 4–5 channels, giving you virtually **unlimited** storage capacity.
 
-### 5 · Run
+1. Create 4–5 private Telegram channels
+2. Add your bot as **admin** with post permissions in each
+3. Copy all channel IDs (format: `-100XXXXXXXXXX`)
+4. Set them all in `.env`:
+
+```
+STORAGE_CHANNEL_ID=-1001111111111
+STORAGE_CHANNEL_IDS=-1001111111111,-1002222222222,-1003333333333,-1004444444444,-1005555555555
+```
+
+The bot automatically distributes file uploads across all channels in a round-robin fashion, so storage is effectively unlimited.
+
+### 5 · Grok AI Setup (Optional)
+
+The bot has a built-in **AI assistant** powered by xAI Grok. When enabled, users can chat with the bot naturally in private, and it will answer questions, guide them through features, and provide helpful responses.
+
+1. Go to [console.x.ai](https://console.x.ai/) and create a free account
+2. Generate an API key
+3. Add to `.env`:
+
+```
+GROK_API_KEY=xai-your-key-here
+```
+
+Leave `GROK_API_KEY` empty to disable the AI assistant.
+
+### 6 · Run
 
 ```bash
 python main.py
 ```
+
+---
+
+## ✦ Premium Pricing
+
+| Plan | Price | Storage | Upload Limit |
+|---|---|---|---|
+| 🆓 Free | — | 500 MB | 20 MB |
+| 👑 Yearly | **₹39 / year** | ∞ Unlimited | 2 GB |
+
+Payment is via UPI (GPay · PhonePe · Paytm · BHIM). User sends screenshot → owner approves → premium activated instantly.
 
 ---
 
@@ -218,8 +260,8 @@ CMD ["python", "main.py"]
 ```
 
 ```bash
-docker build -t vault-bot .
-docker run --env-file .env vault-bot
+docker build -t secret-file-bot .
+docker run --env-file .env secret-file-bot
 ```
 
 ---
@@ -231,29 +273,29 @@ The bot generates **UPI deep links** for one-tap payment. Here's how it works:
 ### How It Works
 
 ```
-User taps "💳 Pay ₹99 via UPI/GPay"
+User taps "👑 Yearly — ₹39 / year"
     ↓
 UPI deep link opens GPay/PhonePe/Paytm
     ↓
-User pays & takes a screenshot
+User pays ₹39 & takes a screenshot
     ↓
 User sends screenshot to bot
     ↓
-Bot forwards to admin with [✅ Approve] [❌ Reject] buttons
+Bot forwards to owner with [✅ Approve] [❌ Reject] buttons
     ↓
-Admin approves → user instantly gets premium
+Owner approves → user instantly gets 1 year unlimited premium
 ```
 
 ### UPI Link Format
 
 ```python
-upi://pay?pa=yourname@gpay&pn=Vault+Bot&am=99&tn=vault+monthly&cu=INR
+upi://pay?pa=yourname@gpay&pn=Secret+File+Storage+Bot&am=39&tn=yearly+premium&cu=INR
 ```
 
 Set your UPI ID in `.env`:
 ```
 UPI_ID=yourname@gpay
-UPI_NAME=Vault Bot Premium
+UPI_NAME=Secret File Storage Bot
 ```
 
 ### Adding Razorpay (Optional Advanced)
@@ -372,8 +414,16 @@ Actions logged: `upload`, `download`, `delete`, `search`, `vault`, `share`, `pay
 
 <div align="center">
 
+---
+
 **Built with precision. Designed for scale.**
 
-ᴅᴇᴠ: [@its_me_secret](https://t.me/its_me_secret) &nbsp;|&nbsp; sᴜᴘᴘᴏʀᴛ: [@song_assistant](https://t.me/song_assistant)
+### 🔒 sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ
+
+| 👨‍💻 Developer | 🆘 Support |
+|:---:|:---:|
+| [@its_me_secret](https://t.me/its_me_secret) | [@song_assistant](https://t.me/song_assistant) |
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 </div>
