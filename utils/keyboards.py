@@ -14,8 +14,8 @@ _button_styles = {}
 
 _old_inline_to_dict = InlineKeyboardButton.to_dict
 
-def _new_inline_to_dict(self):
-    d = _old_inline_to_dict(self)
+def _new_inline_to_dict(self, *args, **kwargs):
+    d = _old_inline_to_dict(self, *args, **kwargs)
     style = _button_styles.pop(id(self), None)
     if style:
         d["style"] = style
@@ -26,8 +26,8 @@ InlineKeyboardButton.to_dict = _new_inline_to_dict
 
 _old_kb_to_dict = KeyboardButton.to_dict
 
-def _new_kb_to_dict(self):
-    d = _old_kb_to_dict(self)
+def _new_kb_to_dict(self, *args, **kwargs):
+    d = _old_kb_to_dict(self, *args, **kwargs)
     style = _button_styles.pop(id(self), None)
     if style:
         d["style"] = style
