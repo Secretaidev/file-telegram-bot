@@ -163,12 +163,14 @@ def start_link(payload: str) -> str:
 # ── safe message edit helper ──────────────────────────────────────────────────
 
 async def safe_edit(query_or_message, text: str, **kwargs) -> None:
-    """Edit message text, silently ignoring 'message is not modified' errors."""
+    """Edit message text, silently ignoring 'message is not modified' and other ignorable errors."""
     from telegram.error import BadRequest
     try:
         await query_or_message.edit_message_text(text, **kwargs)
     except BadRequest as e:
-        if "not modified" in str(e).lower():
+        msg = str(e).lower()
+        ignorable = ("not modified", "not found", "too old", "peer_id_invalid")
+        if any(frag in msg for frag in ignorable):
             pass
         else:
             raise

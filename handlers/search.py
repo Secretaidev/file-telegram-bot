@@ -31,10 +31,12 @@ async def cmd_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         return
 
     context.user_data["awaiting_search"] = True
+    user_id = update.effective_user.id
+    pop_tags = await SearchService.get_popular_tags(user_id, limit=6)
     await update.message.reply_text(
         "🔍  <b>sᴇᴀʀᴄʜ ʏᴏᴜʀ ꜰɪʟᴇs</b>\n\n"
         "ᴛʏᴘᴇ ᴀ ꜰɪʟᴇ ɴᴀᴍᴇ, ᴛᴀɢ, ᴏʀ ᴋᴇʏᴡᴏʀᴅ:",
-        reply_markup=search_filters(),
+        reply_markup=search_filters(pop_tags),
         parse_mode="HTML",
     )
 
@@ -118,6 +120,10 @@ async def cbq_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         last = context.user_data.get("last_search", {})
         await _do_search(update, context, q or last.get("query", ""), page=0, sort_by=sort_by)
 
+    elif action == "tag":
+        tag_name = parts[2]
+        await _do_search_by_tag(update, context, tag_name)
+
 
 async def cbq_filter(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     q = update.callback_query
@@ -144,10 +150,11 @@ async def cbq_file_view(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         await q.answer("ꜰɪʟᴇ ɴᴏᴛ ꜰᴏᴜɴᴅ.", show_alert=True)
         return
 
+    import asyncio
     user_id = q.from_user.id
     is_fav = file_db_id in await _get_user_favs(user_id)
-    await FileService.increment_views(file_db_id)
-    await UserService.add_to_recent(user_id, file_db_id)
+    asyncio.create_task(FileService.increment_views(file_db_id))
+    asyncio.create_task(UserService.add_to_recent(user_id, file_db_id))
 
     icon = category_icon(doc.get("category", "other"))
     text = (
@@ -169,6 +176,33 @@ async def cbq_file_view(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 async def _get_user_favs(user_id: int) -> list:
     from services import UserService
     return await UserService.get_favorites(user_id)
+
+
+async def _do_search_by_tag(update: Update, context: ContextTypes.DEFAULT_TYPE, tag_name: str) -> None:
+    user_id = update.effective_user.id
+    results, total = await SearchService.search(
+        query="",
+        owner_id=user_id,
+        tags=[tag_name],
+        page=0
+    )
+    total_pages = max(1, (total + cfg.SEARCH_PAGE_SIZE - 1) // cfg.SEARCH_PAGE_SIZE)
+    
+    if not results:
+        text = (
+            f"🔍  <b>ɴᴏ ʀᴇsᴜʟᴛs</b>\n\n"
+            f"ɴᴏᴛʜɪɴɢ ꜰᴏᴜɴᴅ ꜰᴏʀ ᴛᴀɢ: <code>#{tag_name}</code>"
+        )
+        await update.callback_query.edit_message_text(with_footer(text), reply_markup=back_btn("menu:search"), parse_mode="HTML")
+        return
+
+    text = (
+        f"🔍  <b>sᴇᴀʀᴄʜ ʀᴇsᴜʟᴛs</b>\n\n"
+        f"ᴛᴀɢ: <code>#{tag_name}</code>\n"
+        f"ꜰᴏᴜɴᴅ: <b>{total}</b> ꜰɪʟᴇ{'s' if total != 1 else ''}"
+    )
+    markup = search_results(results, f"#{tag_name}", page=0, total_pages=total_pages)
+    await update.callback_query.edit_message_text(with_footer(text), reply_markup=markup, parse_mode="HTML")
 
 
 def get_handlers():

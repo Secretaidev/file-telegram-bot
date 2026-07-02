@@ -40,15 +40,13 @@ KeyboardButton.to_dict = _new_kb_to_dict
 
 def btn(text: str, data: str, style: Optional[str] = None) -> InlineKeyboardButton:
     b = InlineKeyboardButton(text, callback_data=data)
-    if style:
-        _button_styles[id(b)] = style
+    _button_styles[id(b)] = style or "primary"
     return b
 
 
 def url_btn(text: str, url: str, style: Optional[str] = None) -> InlineKeyboardButton:
     b = InlineKeyboardButton(text, url=url)
-    if style:
-        _button_styles[id(b)] = style
+    _button_styles[id(b)] = style or "primary"
     return b
 
 
@@ -65,16 +63,16 @@ def build(*rows: List[InlineKeyboardButton]) -> InlineKeyboardMarkup:
 def main_menu(is_premium: bool = False, is_admin: bool = False) -> InlineKeyboardMarkup:
     rows = [
         row(btn("📁  ᴍʏ ꜰɪʟᴇs", "menu:files", "primary"), btn("🔍  sᴇᴀʀᴄʜ", "menu:search", "primary")),
-        row(btn("📂  ꜰᴏʟᴅᴇʀs", "menu:folders", "primary"), btn("🔐  ᴠᴀᴜʟᴛ", "menu:vault", "primary")),
+        row(btn("📂  ꜰᴏʟᴅᴇʀs", "menu:folders", "primary"), btn("🔐  ᴠᴀᴜʟᴛ", "menu:vault", "danger")),
         row(btn("🔗  sʜᴀʀᴇ ʟɪɴᴋs", "menu:links", "primary"), btn("⭐  ꜰᴀᴠᴏʀɪᴛᴇs", "menu:favorites", "primary")),
         row(btn("📊  sᴛᴀᴛs", "menu:stats", "primary"), btn("💎  ᴘʀᴇᴍɪᴜᴍ", "menu:premium", "success")),
     ]
     if is_admin:
-        rows.append(row(btn("⚙️  ᴀᴅᴍɪɴ ᴘᴀɴᴇʟ", "admin:panel", "primary")))
-    rows.append(row(btn("❓  ʜᴇʟᴘ", "menu:help", "primary"), btn("ℹ️  ᴀʙᴏᴜᴛ", "menu:about", "primary")))
+        rows.append(row(btn("⚙️  ᴀᴅᴍɪɴ ᴘᴀɴᴇʟ", "admin:panel", "danger")))
+    rows.append(row(btn("❓  ʜᴇʟᴘ", "menu:help", "success"), btn("ℹ️  ᴀʙᴏᴜᴛ", "menu:about", "success")))
     rows.append(row(
-        url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_Xyron", "primary"),
-        url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/its_Xyron", "primary"),
+        url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_Xyron", "success"),
+        url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/its_Xyron", "danger"),
     ))
     return build(*rows)
 
@@ -87,6 +85,7 @@ def file_actions(file_id: str, is_vault: bool = False, is_favorite: bool = False
         row(btn("📤  sᴇɴᴅ ꜰɪʟᴇ", f"file:send:{file_id}", "success"), btn(fav_text, f"file:fav:{file_id}", "primary")),
         row(btn("✏️  ʀᴇɴᴀᴍᴇ", f"file:rename:{file_id}", "primary"), btn("📋  ᴄᴏᴘʏ", f"file:copy:{file_id}", "primary")),
         row(btn("🔗  sʜᴀʀᴇ ʟɪɴᴋ", f"file:share:{file_id}", "primary"), btn("📁  ᴍᴏᴠᴇ", f"file:move:{file_id}", "primary")),
+        row(btn("🤖  ᴀɪ ᴅᴇsᴄʀɪʙᴇ", f"file:aidesc:{file_id}", "success")),
         row(btn("🗑  ᴅᴇʟᴇᴛᴇ", f"file:delete:{file_id}", "danger"), btn("ℹ️  ɪɴꜰᴏ", f"file:info:{file_id}", "primary")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:files", "primary")),
     ]
@@ -112,7 +111,7 @@ def folder_list(
 ) -> InlineKeyboardMarkup:
     rows = []
     for f in folders:
-        rows.append(row(btn(f"📁  {f['name']}", f"folder:open:{f['_id']}", "primary")))
+        rows.append(row(btn(f"📁  {f['name']}", f"folder:open:{f['_id']}", "success")))
     for f in files:
         rows.append(row(btn(f"📄  {f['file_name']}", f"file:view:{f['_id']}", "primary")))
 
@@ -127,12 +126,12 @@ def folder_list(
 
     actions = [btn("➕  ɴᴇᴡ ꜰᴏʟᴅᴇʀ", f"folder:new:{current_id or 'root'}", "success")]
     if current_id:
-        actions.append(btn("📤  ᴜᴘʟᴏᴀᴅ ʜᴇʀᴇ", f"folder:upload:{current_id}", "success"))
+        actions.append(btn("📤  ᴜᴘʟᴏᴀᴅ ʜᴇʀᴇ", f"folder:upload:{current_id}", "primary"))
     rows.append(actions)
 
     back_rows = []
     if parent_id:
-        back_rows.append(btn("◀️  ᴜᴘ", f"folder:open:{parent_id}", "primary"))
+        back_rows.append(btn("◀️  ᴜᴘ", f"folder:open:{parent_id}", "danger"))
     back_rows.append(btn("🏠  ʜᴏᴍᴇ", "menu:files", "primary"))
     rows.append(back_rows)
 
@@ -163,21 +162,30 @@ def search_results(
 
     sort_opts = [
         btn("🕐 ʟᴀᴛᴇsᴛ", f"search:sort:latest:{query}", "primary"),
-        btn("📏 sɪᴢᴇ", f"search:sort:size:{query}", "primary"),
-        btn("🔥 ᴘᴏᴘᴜʟᴀʀ", f"search:sort:popular:{query}", "primary"),
+        btn("📏 sɪᴢᴇ", f"search:sort:size:{query}", "success"),
+        btn("🔥 ᴘᴏᴘᴜʟᴀʀ", f"search:sort:popular:{query}", "danger"),
     ]
     rows.append(sort_opts)
-    rows.append(row(btn("◀️  ʙᴀᴄᴋ", "menu:search", "primary")))
+    rows.append(row(btn("◀️  ʙᴀᴄᴋ", "menu:search", "danger")))
     return build(*rows)
 
 
-def search_filters() -> InlineKeyboardMarkup:
-    return build(
-        row(btn("📹  ᴠɪᴅᴇᴏs", "filter:video", "primary"), btn("🎵  ᴀᴜᴅɪᴏ", "filter:audio", "primary")),
-        row(btn("📄  ᴅᴏᴄs", "filter:document", "primary"), btn("🖼  ᴘʜᴏᴛᴏs", "filter:photo", "primary")),
-        row(btn("📦  ᴀʀᴄʜɪᴠᴇs", "filter:archive", "primary"), btn("🗂  ᴀʟʟ", "filter:all", "primary")),
-        row(btn("◀️  ʙᴀᴄᴋ", "menu:search", "primary")),
-    )
+def search_filters(pop_tags: list = None) -> InlineKeyboardMarkup:
+    rows = [
+        row(btn("📹  ᴠɪᴅᴇᴏs", "filter:video", "primary"), btn("🎵  ᴀᴜᴅɪᴏ", "filter:audio", "success")),
+        row(btn("📄  ᴅᴏᴄs", "filter:document", "primary"), btn("🖼  ᴘʜᴏᴛᴏs", "filter:photo", "success")),
+        row(btn("📦  ᴀʀᴄʜɪᴠᴇs", "filter:archive", "danger"), btn("🗂  ᴀʟʟ", "filter:all", "primary")),
+    ]
+    if pop_tags:
+        tag_buttons = []
+        for tag in pop_tags:
+            tag_name = tag["_id"]
+            tag_count = tag["count"]
+            tag_buttons.append(btn(f"🏷  #{tag_name} ({tag_count})", f"search:tag:{tag_name}", "primary"))
+        for i in range(0, len(tag_buttons), 2):
+            rows.append(tag_buttons[i:i+2])
+    rows.append(row(btn("◀️  ʙᴀᴄᴋ", "menu:start", "danger")))
+    return build(*rows)
 
 
 # ── premium ───────────────────────────────────────────────────────────────────
@@ -194,7 +202,7 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
             ),
         )
     return build(
-        row(btn("👑  ʏᴇᴀʀʟʏ — ₹99 / ʏᴇᴀʀ", "premium:buy:yearly", "success")),
+        row(btn("👑  ᴍᴏɴᴛʜʟʏ — ₹10 / ᴍᴏɴᴛʜ", "premium:buy:monthly", "success")),
         row(btn("💳  sᴇɴᴅ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ", "premium:payment", "success")),
         row(btn("📋  ᴘʟᴀɴ ᴄᴏᴍᴘᴀʀɪsᴏɴ", "premium:compare", "primary")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start", "primary")),
@@ -207,7 +215,7 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
 
 def payment_plan_select() -> InlineKeyboardMarkup:
     return build(
-        row(btn("👑  ʏᴇᴀʀʟʏ — ₹99 / ʏᴇᴀʀ", "pay:plan:yearly:99", "success")),
+        row(btn("👑  ᴍᴏɴᴛʜʟʏ — ₹10 / ᴍᴏɴᴛʜ", "pay:plan:monthly:10", "success")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:premium", "primary")),
     )
 
@@ -263,10 +271,10 @@ def share_link_view(token: str, link_id: str) -> InlineKeyboardMarkup:
 def admin_panel() -> InlineKeyboardMarkup:
     return build(
         row(btn("👥  ᴜsᴇʀs", "admin:users", "primary"), btn("📊  sᴛᴀᴛs", "admin:stats", "primary")),
-        row(btn("📢  ʙʀᴏᴀᴅᴄᴀsᴛ", "admin:broadcast", "primary"), btn("💳  ᴘᴀʏᴍᴇɴᴛs", "admin:payments", "success")),
-        row(btn("📋  ʟᴏɢs", "admin:logs:0", "primary"), btn("🔎  sᴇᴀʀᴄʜ ᴜsᴇʀ", "admin:searchuser", "primary")),
+        row(btn("📢  ʙʀᴏᴀᴅᴄᴀsᴛ", "admin:broadcast", "danger"), btn("💳  ᴘᴀʏᴍᴇɴᴛs", "admin:payments", "success")),
+        row(btn("📋  ʟᴏɢs", "admin:logs:0", "success"), btn("🔎  sᴇᴀʀᴄʜ ᴜsᴇʀ", "admin:searchuser", "success")),
         row(btn("🛠  ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ", "admin:maintenance", "danger"), btn("💾  ʙᴀᴄᴋᴜᴘ", "admin:backup", "success")),
-        row(btn("📂  ʙᴀᴄᴋᴜᴘ ʟɪsᴛ", "admin:backuplist", "primary"), btn("◀️  ʙᴀᴄᴋ", "menu:start", "primary")),
+        row(btn("📂  ʙᴀᴄᴋᴜᴘ ʟɪsᴛ", "admin:backuplist", "success"), btn("◀️  ʙᴀᴄᴋ", "menu:start", "danger")),
     )
 
 

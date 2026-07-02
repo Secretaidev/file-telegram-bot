@@ -451,7 +451,7 @@ _KEYWORD_MAP: list[tuple[list[str], str]] = [
         "Vault files      Limited   ∞ Unlimited\n"
         "Priority support  ❌       ✅\n"
         "```\n\n"
-        "💰 *Price: ₹99/year only!*\n\n"
+        "💰 *Price: ₹10/month only!*\n\n"
         "*Premium kaise buy karo:*\n"
         "1️⃣ /premium type karo\n"
         "2️⃣ 💎 Buy Premium tap karo\n"

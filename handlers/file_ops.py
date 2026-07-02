@@ -73,6 +73,9 @@ async def cbq_file_ops(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     elif action == "move":
         await _prompt_move(q, context, file_db_id)
 
+    elif action == "aidesc":
+        await _generate_ai_description(q, context, file_db_id)
+
 
 async def _send_file(q, context, file_db_id: str) -> None:
     await q.answer("sᴇɴᴅɪɴɢ…")
@@ -93,10 +96,13 @@ async def _send_file(q, context, file_db_id: str) -> None:
             caption=caption,
             parse_mode="HTML",
         )
-        await FileService.increment_downloads(file_db_id)
-        await channel_log(
-            context.bot, "download", q.from_user.id, q.from_user.username,
-            details={"file": doc["file_name"]},
+        import asyncio
+        asyncio.create_task(FileService.increment_downloads(file_db_id))
+        asyncio.create_task(
+            channel_log(
+                context.bot, "download", q.from_user.id, q.from_user.username,
+                details={"file": doc["file_name"]},
+            )
         )
     except Exception as e:
         log.error("send_file error: %s", e)
@@ -217,7 +223,71 @@ async def _prompt_move(q, context, file_db_id: str) -> None:
     )
 
 
+async def _generate_ai_description(q, context, file_db_id: str) -> None:
+    await q.answer("🧠 Analyzing file details...")
+    doc = await FileService.get_by_id(file_db_id)
+    if not doc:
+        await q.answer("File not found.", show_alert=True)
+        return
+
+    from config import cfg
+    if not cfg.GROK_API_KEY:
+        await q.answer("❌ AI Assistant is not configured by owner.", show_alert=True)
+        return
+
+    from handlers.ai import _ask_grok
+    prompt = (
+        f"Provide a short, premium, eye-catching description/summary of this file.\n"
+        f"Filename: {doc['file_name']}\n"
+        f"Category: {doc.get('category', 'other')}\n"
+        f"Size: {format_size(doc.get('file_size', 0))}\n\n"
+        f"Provide the response in Hinglish/English. Keep the description under 3 sentences. "
+        f"At the end, suggest 3-5 relevant hashtags. "
+        f"Use ONLY these HTML tags for formatting: <b>bold</b>, <i>italic</i>, and <code>code</code>. "
+        f"Do not use markdown formatting. Format exactly like this:\n\n"
+        f"🤖 <b>File Overview:</b>\n"
+        f"[Overview description]\n\n"
+        f"🏷 <b>Auto Tags:</b>\n"
+        f"<code>#tag1</code> <code>#tag2</code> <code>#tag3</code>"
+    )
+
+    await q.edit_message_text(
+        with_footer(
+            f"🤖  <b>ᴀɪ ᴀɴᴀʟʏsɪs ɪɴ ᴘʀᴏɢʀᴇss…</b>\n\n"
+            f"Analyzing <code>{doc['file_name']}</code>\n"
+            f"Please wait a few seconds."
+        ),
+        parse_mode="HTML"
+    )
+
+    reply = await _ask_grok(prompt, [])
+    if not reply:
+        await q.edit_message_text(
+            with_footer("❌ ꜰᴀɪʟᴇᴅ ᴛᴏ ɢᴇɴᴇʀᴀᴛᴇ ᴀɪ ᴅᴇsᴄʀɪᴘᴛɪᴏɴ. ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ."),
+            reply_markup=file_actions(file_db_id, is_vault=doc.get("is_vault", False)),
+            parse_mode="HTML"
+        )
+        return
+
+    # Check favorites status to preserve keyboard actions
+    user_id = q.from_user.id
+    from handlers.search import _get_user_favs
+    is_fav = file_db_id in await _get_user_favs(user_id)
+
+    formatted_text = (
+        f"🤖  <b>ᴀɪ ꜰɪʟᴇ ᴅᴇsᴄʀɪᴘᴛɪᴏɴ</b>\n\n"
+        f"{reply}\n\n"
+        f"📎 ꜰɪʟᴇ: <code>{doc['file_name']}</code>"
+    )
+
+    await q.edit_message_text(
+        with_footer(formatted_text),
+        reply_markup=file_actions(file_db_id, is_vault=doc.get("is_vault", False), is_favorite=is_fav),
+        parse_mode="HTML"
+    )
+
+
 def get_handlers():
     return [
-        CallbackQueryHandler(cbq_file_ops, pattern=r"^file:(send|fav|rename|delete|delete_confirm|info|share|copy|move):"),
+        CallbackQueryHandler(cbq_file_ops, pattern=r"^file:(send|fav|rename|delete|delete_confirm|info|share|copy|move|aidesc):"),
     ]

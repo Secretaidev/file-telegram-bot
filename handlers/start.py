@@ -156,14 +156,16 @@ async def _deliver_shared_file(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.message.reply_text("❌ ꜰᴀɪʟᴇᴅ ᴛᴏ ᴅᴇʟɪᴠᴇʀ ꜰɪʟᴇ. ᴛʀʏ ᴀɢᴀɪɴ.")
         return
 
-    await ShareService.record_access(str(link["_id"]), downloaded=True)
-    await ShareService.deactivate_if_one_time(link)
-    await FileService.increment_downloads(link["file_id"])
-
-    await channel_log(
-        context.bot, "download", update.effective_user.id,
-        update.effective_user.username,
-        details={"file": file_doc["file_name"], "token": link["token"]},
+    import asyncio
+    asyncio.create_task(ShareService.record_access(str(link["_id"]), downloaded=True))
+    asyncio.create_task(ShareService.deactivate_if_one_time(link))
+    asyncio.create_task(FileService.increment_downloads(link["file_id"]))
+    asyncio.create_task(
+        channel_log(
+            context.bot, "download", update.effective_user.id,
+            update.effective_user.username,
+            details={"file": file_doc["file_name"], "token": link["token"]},
+        )
     )
 
 
@@ -207,10 +209,12 @@ async def cbq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
         elif action == "search":
             context.user_data["awaiting_search"] = True
+            from services.search_service import SearchService
+            pop_tags = await SearchService.get_popular_tags(query.from_user.id, limit=6)
             await safe_edit(
                 query,
                 "🔍  <b>sᴇᴀʀᴄʜ ʏᴏᴜʀ ꜰɪʟᴇs</b>\n\nᴛʏᴘᴇ ᴀ ꜰɪʟᴇ ɴᴀᴍᴇ, ᴛᴀɢ, ᴏʀ ᴋᴇʏᴡᴏʀᴅ:",
-                reply_markup=search_filters(),
+                reply_markup=search_filters(pop_tags),
                 parse_mode="HTML",
             )
 

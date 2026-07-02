@@ -84,8 +84,8 @@ class Config:
     PREMIUM_UPLOAD_LIMIT: int = field(default_factory=lambda: _storage_limit_bytes("PREMIUM_UPLOAD_LIMIT_MB", 2048))
 
     # payment
-    UPI_ID: str = field(default_factory=lambda: os.getenv("UPI_ID", "yourname@gpay"))
-    UPI_NAME: str = field(default_factory=lambda: os.getenv("UPI_NAME", "Secret File Storage Bot"))
+    UPI_ID: str = field(default_factory=lambda: os.getenv("UPI_ID", "xyron@upi"))
+    UPI_NAME: str = field(default_factory=lambda: os.getenv("UPI_NAME", "Xyron BHIM Pay"))
 
     # backup
     BACKUP_INTERVAL_HOURS: int = field(default_factory=lambda: _int("BACKUP_INTERVAL_HOURS", 48))

@@ -52,7 +52,7 @@ async def cbq_premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await q.edit_message_text(
             with_footer(
                 "💳  <b>sᴇʟᴇᴄᴛ ᴀ ᴘʟᴀɴ</b>\n\n"
-                "👑 ʏᴇᴀʀʟʏ: <b>₹99 / ʏᴇᴀʀ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ\n\n"
+                "👑 ᴍᴏɴᴛʜʟʏ: <b>₹10 / ᴍᴏɴᴛʜ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ\n\n"
                 "ᴄʜᴏᴏsᴇ ᴀ ᴘʟᴀɴ ᴛᴏ ᴄᴏɴᴛɪɴᴜᴇ:"
             ),
             reply_markup=payment_plan_select(),
@@ -139,7 +139,7 @@ async def handle_payment_screenshot(update: Update, context: ContextTypes.DEFAUL
         return
 
     user = update.effective_user
-    plan = context.user_data.pop("payment_plan", "yearly")
+    plan = context.user_data.pop("payment_plan", "monthly")
     context.user_data.pop("awaiting_screenshot", None)
 
     photo = update.message.photo
@@ -285,7 +285,7 @@ def _build_premium_text(is_premium: bool) -> str:
         "💎  <b>ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
         "ᴜɴʟᴏᴄᴋ ᴛʜᴇ ꜰᴜʟʟ ᴘᴏᴡᴇʀ ᴏꜰ\n"
         "🔒 sᴇᴄʀᴇᴛ ꜰɪʟᴇ sᴛᴏʀᴀɢᴇ ʙᴏᴛ.\n\n"
-        "👑 <b>ʏᴇᴀʀʟʏ: ₹99 / ʏᴇᴀʀ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ\n\n"
+        "👑 <b>ᴍᴏɴᴛʜʟʏ: ₹10 / ᴍᴏɴᴛʜ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ\n\n"
         "💳 <b>ᴘᴀʏ ᴠɪᴀ ɢᴘᴀʏ / ᴘʜᴏɴᴇᴘᴇ / ᴀɴʏ ᴜᴘɪ</b>"
     )
 
@@ -305,7 +305,7 @@ def _compare_text() -> str:
         "ᴘʀɪᴏʀɪᴛʏ sᴜᴘᴘᴏʀᴛ  ✗        ✓\n"
         "ᴀɪ ᴀssɪsᴛᴀɴᴄᴇ     ✗        ✓\n"
         "</code>\n\n"
-        "👑 <b>ʏᴇᴀʀʟʏ: ₹99 / ʏᴇᴀʀ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ"
+        "👑 <b>ᴍᴏɴᴛʜʟʏ: ₹10 / ᴍᴏɴᴛʜ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ"
     )
 
 
