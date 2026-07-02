@@ -202,7 +202,8 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
             ),
         )
     return build(
-        row(btn("👑  ᴍᴏɴᴛʜʟʏ — ₹10 / ᴍᴏɴᴛʜ", "premium:buy:monthly", "success")),
+        row(btn("👑  ᴍᴏɴᴛʜʟʏ — ₹9 / ᴍᴏɴᴛʜ", "premium:buy:monthly", "success")),
+        row(btn("👑  ʏᴇᴀʀʟʏ — ₹99 / ʏᴇᴀʀ", "premium:buy:yearly", "success")),
         row(btn("💳  sᴇɴᴅ ᴘᴀʏᴍᴇɴᴛ sᴄʀᴇᴇɴsʜᴏᴛ", "premium:payment", "success")),
         row(btn("📋  ᴘʟᴀɴ ᴄᴏᴍᴘᴀʀɪsᴏɴ", "premium:compare", "primary")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start", "primary")),
@@ -215,9 +216,19 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
 
 def payment_plan_select() -> InlineKeyboardMarkup:
     return build(
-        row(btn("👑  ᴍᴏɴᴛʜʟʏ — ₹10 / ᴍᴏɴᴛʜ", "pay:plan:monthly:10", "success")),
+        row(btn("👑  ᴍᴏɴᴛʜʟʏ — ₹9 / ᴍᴏɴᴛʜ", "pay:plan:monthly:9", "success")),
+        row(btn("👑  ʏᴇᴀʀʟʏ — ₹99 / ʏᴇᴀʀ", "pay:plan:yearly:99", "success")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:premium", "primary")),
     )
+
+
+def upi_pay_btn(amount: int, label: str) -> InlineKeyboardButton:
+    import urllib.parse
+    from config import cfg
+    pa = cfg.UPI_ID
+    pn = urllib.parse.quote(cfg.UPI_NAME)
+    url = f"upi://pay?pa={pa}&pn={pn}&am={amount}&cu=INR"
+    return url_btn(label, url, "success")
 
 
 def payment_admin_review(payment_id: str) -> InlineKeyboardMarkup:

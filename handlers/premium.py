@@ -45,6 +45,11 @@ async def cbq_premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     if action == "buy":
         plan = parts[2]
         await q.answer()
+        await _show_payment_methods(q, context, plan)
+
+    elif action == "manual":
+        plan = parts[2]
+        await q.answer()
         await _show_payment_instructions(q, context, plan)
 
     elif action == "payment":
@@ -52,7 +57,8 @@ async def cbq_premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await q.edit_message_text(
             with_footer(
                 "💳  <b>sᴇʟᴇᴄᴛ ᴀ ᴘʟᴀɴ</b>\n\n"
-                "👑 ᴍᴏɴᴛʜʟʏ: <b>₹10 / ᴍᴏɴᴛʜ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ\n\n"
+                "👑 ᴍᴏɴᴛʜʟʏ: <b>₹9 / ᴍᴏɴᴛʜ</b>\n"
+                "👑 ʏᴇᴀʀʟʏ: <b>₹99 / ʏᴇᴀʀ</b>\n\n"
                 "ᴄʜᴏᴏsᴇ ᴀ ᴘʟᴀɴ ᴛᴏ ᴄᴏɴᴛɪɴᴜᴇ:"
             ),
             reply_markup=payment_plan_select(),
@@ -100,6 +106,27 @@ async def cbq_premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         )
 
 
+async def _show_payment_methods(q, context, plan: str) -> None:
+    from services.subscription_service import PLANS
+    plan_data = PLANS.get(plan, PLANS["monthly"])
+    amount = plan_data["amount"]
+
+    from utils.keyboards import upi_pay_btn
+    markup = build(
+        row(upi_pay_btn(amount, "💳  ᴘᴀʏ ᴠɪᴀ ʙʜɪᴍ ᴜᴘɪ (ᴅɪʀᴇᴄᴛ)")),
+        row(btn("🔑  ᴘᴀʏ ᴠɪᴀ ᴜᴘɪ ɪᴅ (ᴍᴀɴᴜᴀʟ)", f"premium:manual:{plan}", "success")),
+        row(btn("◀️  ʙᴀᴄᴋ", "premium:payment", "primary")),
+    )
+
+    text = (
+        f"💳  <b>ᴘᴀʏᴍᴇɴᴛ ᴍᴇᴛʜᴏᴅ</b>\n\n"
+        f"ᴘʟᴀɴ:   <b>{plan_data['label'].upper()}</b>\n"
+        f"ᴀᴍᴏᴜɴᴛ: <b>₹{amount}</b>\n\n"
+        f"ᴄʜᴏᴏsᴇ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ ᴍᴇᴛʜᴏᴅ:"
+    )
+    await q.edit_message_text(with_footer(text), reply_markup=markup, parse_mode="HTML")
+
+
 async def _show_payment_instructions(q, context, plan: str) -> None:
     from services.subscription_service import PLANS
     plan_data = PLANS.get(plan, PLANS["monthly"])
@@ -107,26 +134,24 @@ async def _show_payment_instructions(q, context, plan: str) -> None:
 
     context.user_data["payment_plan"] = plan
     context.user_data["payment_amount"] = amount
-    context.user_data["awaiting_screenshot"] = True
 
     markup = build(
-        row(btn("📸  ɪ'ᴠᴇ ᴘᴀɪᴅ — sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ", "premium:paid")),
-        row(btn("◀️  ʙᴀᴄᴋ", "menu:premium")),
+        row(btn("📸  sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ", "premium:paid", "success")),
+        row(btn("◀️  ʙᴀᴄᴋ", f"premium:buy:{plan}", "primary")),
     )
 
     text = (
-        f"💳  <b>ᴘᴀʏᴍᴇɴᴛ ɪɴsᴛʀᴜᴄᴛɪᴏɴs</b>\n\n"
-        f"ᴘʟᴀɴ:   <b>{plan_data['label']}</b>\n"
+        f"🔑  <b>ᴍᴀɴᴜᴀʟ ᴜᴘɪ ᴘᴀʏᴍᴇɴᴛ</b>\n\n"
+        f"ᴘʟᴀɴ:   <b>{plan_data['label'].upper()}</b>\n"
         f"ᴀᴍᴏᴜɴᴛ: <b>₹{amount}</b>\n\n"
         f"━━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"<b>1️⃣  ᴏᴘᴇɴ ᴀɴʏ ᴜᴘɪ ᴀᴘᴘ</b>\n"
-        f"<i>GPay · PhonePe · Paytm · BHIM</i>\n\n"
-        f"<b>2️⃣  ᴘᴀʏ ᴛᴏ ᴜᴘɪ ɪᴅ:</b>\n"
+        f"<b>1️⃣  ᴄᴏᴘʏ ᴜᴘɪ ɪᴅ & ᴘᴀʏ:</b>\n"
         f"<code>{cfg.UPI_ID}</code>\n\n"
-        f"ᴀᴍᴏᴜɴᴛ: <b>₹{amount}</b>\n"
+        f"<b>2️⃣  ᴀᴍᴏᴜɴᴛ ᴛᴏ ᴘᴀʏ:</b>\n"
+        f"<b>₹{amount}</b>\n"
         f"ɴᴏᴛᴇ: <i>{plan_data['label']} premium</i>\n\n"
-        f"<b>3️⃣  ᴛᴀᴘ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ & sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ</b>\n\n"
-        f"⏳ <i>ᴀᴄᴛɪᴠᴀᴛɪᴏɴ ᴡɪᴛʜɪɴ 24 ʜᴏᴜʀs.</i>"
+        f"<b>3️⃣  sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ:</b>\n"
+        f"After paying, tap the button below and send the screenshot."
     )
     await q.edit_message_text(with_footer(text), reply_markup=markup, parse_mode="HTML")
 
@@ -285,7 +310,8 @@ def _build_premium_text(is_premium: bool) -> str:
         "💎  <b>ᴜᴘɢʀᴀᴅᴇ ᴛᴏ ᴘʀᴇᴍɪᴜᴍ</b>\n\n"
         "ᴜɴʟᴏᴄᴋ ᴛʜᴇ ꜰᴜʟʟ ᴘᴏᴡᴇʀ ᴏꜰ\n"
         "🔒 sᴇᴄʀᴇᴛ ꜰɪʟᴇ sᴛᴏʀᴀɢᴇ ʙᴏᴛ.\n\n"
-        "👑 <b>ᴍᴏɴᴛʜʟʏ: ₹10 / ᴍᴏɴᴛʜ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ\n\n"
+        "👑 <b>ᴍᴏɴᴛʜʟʏ: ₹9 / ᴍᴏɴᴛʜ</b>\n"
+        "👑 <b>ʏᴇᴀʀʟʏ: ₹99 / ʏᴇᴀʀ</b>\n\n"
         "💳 <b>ᴘᴀʏ ᴠɪᴀ ɢᴘᴀʏ / ᴘʜᴏɴᴇᴘᴇ / ᴀɴʏ ᴜᴘɪ</b>"
     )
 
@@ -305,7 +331,8 @@ def _compare_text() -> str:
         "ᴘʀɪᴏʀɪᴛʏ sᴜᴘᴘᴏʀᴛ  ✗        ✓\n"
         "ᴀɪ ᴀssɪsᴛᴀɴᴄᴇ     ✗        ✓\n"
         "</code>\n\n"
-        "👑 <b>ᴍᴏɴᴛʜʟʏ: ₹10 / ᴍᴏɴᴛʜ</b>  —  ᴜɴʟɪᴍɪᴛᴇᴅ"
+        "👑 <b>ᴍᴏɴᴛʜʟʏ: ₹9 / ᴍᴏɴᴛʜ</b>\n"
+        "👑 <b>ʏᴇᴀʀʟʏ: ₹99 / ʏᴇᴀʀ</b>"
     )
 
 

@@ -218,6 +218,7 @@ python main.py
 | Plan | Price | Storage | Upload Limit | Share Links |
 |---|---|---|---|---|
 | 🆓 Free | — | 500 MB | 500 MB | 10 links |
+| 👑 Monthly | **₹9 / month** | ∞ Unlimited | 2 GB | ∞ Unlimited |
 | 👑 Yearly | **₹99 / year** | ∞ Unlimited | 2 GB | ∞ Unlimited |
 
 Payment is via UPI (GPay · PhonePe · Paytm · BHIM). User sends screenshot → owner approves → premium activated instantly.
@@ -273,11 +274,11 @@ The bot generates **UPI deep links** for one-tap payment. Here's how it works:
 ### How It Works
 
 ```
-User taps "👑 Yearly — ₹39 / year"
+User taps "👑 Monthly — ₹9" or "👑 Yearly — ₹99"
     ↓
 UPI deep link opens GPay/PhonePe/Paytm
     ↓
-User pays ₹39 & takes a screenshot
+User pays ₹9 or ₹99 & takes a screenshot
     ↓
 User sends screenshot to bot
     ↓

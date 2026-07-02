@@ -113,7 +113,7 @@ privately on Telegram.  Key pillars:
   Shows your current plan and upgrade options.
   Free plan:  500 MB storage, 500 MB upload limit, 10 share links.
   Premium:    ∞ unlimited storage, 2 GB uploads, unlimited links, all features.
-  Price:      ₹99/year (Yearly plan — best value!)
+  Price:      ₹9/month or ₹99/year (Yearly plan — best value!)
   Payment:    Pay via UPI/GPay, then send the screenshot inside the bot.
   Approval:   Admin reviews and activates within a few hours.
 
@@ -253,7 +253,7 @@ Free vs Premium comparison:
   Bulk operations      ❌            ✅
   Priority support     ❌            ✅
 
-Price:  ₹99/year (Yearly plan)
+Price:  ₹9/month or ₹99/year (Yearly plan — best value!)
 
 How to buy Premium:
   1. Type /premium → tap 💎 Buy Premium
@@ -451,7 +451,7 @@ _KEYWORD_MAP: list[tuple[list[str], str]] = [
         "Vault files      Limited   ∞ Unlimited\n"
         "Priority support  ❌       ✅\n"
         "```\n\n"
-        "💰 *Price: ₹10/month only!*\n\n"
+        "💰 *Price: ₹9/month or ₹99/year only!*\n\n"
         "*Premium kaise buy karo:*\n"
         "1️⃣ /premium type karo\n"
         "2️⃣ 💎 Buy Premium tap karo\n"
@@ -665,7 +665,7 @@ _KEYWORD_MAP: list[tuple[list[str], str]] = [
         "📂 *Folders:* Nested organisation\n"
         "⭐ *Favourites:* Quick access bookmarks\n"
         "🏷 *Tags:* #hashtag auto-categorisation\n"
-        "💎 *Premium:* Unlimited storage + 2GB uploads @ ₹99/yr\n"
+        "💎 *Premium:* Unlimited storage + 2GB uploads @ ₹9/mo or ₹99/yr\n"
         "🤖 *AI Assistant:* 24/7 smart help (enable with /ai)\n"
         "📊 *Stats:* Real-time storage usage\n\n"
         "Kisi bhi feature ke baare mein pucho! 😊",
