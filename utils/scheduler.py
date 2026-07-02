@@ -96,5 +96,6 @@ def start(bot: Bot) -> None:
 
 
 def stop() -> None:
-    _scheduler.shutdown(wait=False)
-    log.info("scheduler stopped")
+    if _scheduler.running:
+        _scheduler.shutdown(wait=False)
+        log.info("scheduler stopped")
