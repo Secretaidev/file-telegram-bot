@@ -1,6 +1,6 @@
 """
 vault bot — share link service
-cdn-style tokenised links with expiry, one-time access, password protection
+cdn-style tokenised links with expiry, one-time access, password protection, and caching
 """
 
 from __future__ import annotations
@@ -10,8 +10,12 @@ from typing import Any, Dict, Optional, Tuple
 from bson import ObjectId
 from database import links, link_doc as mk_link
 from utils.helpers import generate_token, hash_pin
+from cachetools import TTLCache
 
 log = logging.getLogger(__name__)
+
+# Bounded in-memory cache for high-traffic share link lookups
+_share_cache: TTLCache[str, Dict[str, Any]] = TTLCache(maxsize=5000, ttl=300)
 
 
 class ShareService:
@@ -44,12 +48,22 @@ class ShareService:
 
     @staticmethod
     async def resolve_token(token: str) -> Tuple[Optional[Dict[str, Any]], str]:
+        cached = _share_cache.get(token)
+        if cached is not None:
+            # Recheck expiry status dynamically from cached record
+            if cached.get("expires_at") and cached["expires_at"] < datetime.utcnow():
+                _share_cache.pop(token, None)
+            else:
+                return cached, "ok"
+
         doc = await links().find_one({"token": token, "is_active": True})
         if not doc:
             return None, "link not found or revoked"
         if doc.get("expires_at") and doc["expires_at"] < datetime.utcnow():
             await links().update_one({"_id": doc["_id"]}, {"$set": {"is_active": False}})
             return None, "link has expired"
+
+        _share_cache[token] = doc
         return doc, "ok"
 
     @staticmethod
@@ -65,6 +79,10 @@ class ShareService:
         if downloaded:
             update["$inc"]["downloads"] = 1
         await links().update_one({"_id": ObjectId(link_db_id)}, update)
+        # Find document to pop cache since view/download stats changed
+        doc = await links().find_one({"_id": ObjectId(link_db_id)})
+        if doc:
+            _share_cache.pop(doc.get("token"), None)
 
     @staticmethod
     async def deactivate_if_one_time(link_doc: Dict[str, Any]) -> None:
@@ -73,13 +91,18 @@ class ShareService:
                 {"_id": link_doc["_id"]},
                 {"$set": {"is_active": False}},
             )
+            _share_cache.pop(link_doc.get("token"), None)
 
     @staticmethod
     async def revoke(link_db_id: str, owner_id: int) -> bool:
+        doc = await links().find_one({"_id": ObjectId(link_db_id), "owner_id": owner_id})
+        if not doc:
+            return False
         result = await links().update_one(
-            {"_id": ObjectId(link_db_id), "owner_id": owner_id},
+            {"_id": ObjectId(link_db_id)},
             {"$set": {"is_active": False}},
         )
+        _share_cache.pop(doc.get("token"), None)
         return result.modified_count > 0
 
     @staticmethod

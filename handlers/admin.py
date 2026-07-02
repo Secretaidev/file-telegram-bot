@@ -537,6 +537,7 @@ async def _show_user_stats(q, context, user_id: int) -> None:
 # ── broadcast ─────────────────────────────────────────────────────────────────
 
 async def handle_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    import asyncio
     if context.user_data.get("admin_state") != "broadcast":
         return
     if not cfg.is_admin(update.effective_user.id):
@@ -547,26 +548,49 @@ async def handle_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
     from database import users
     all_users = await users().find({}, {"user_id": 1}).to_list(None)
+    total_users = len(all_users)
     success = 0
     failed = 0
 
-    status_msg = await message.reply_text(f"📢 ʙʀᴏᴀᴅᴄᴀsᴛɪɴɢ ᴛᴏ {len(all_users)} ᴜsᴇʀs…")
+    status_msg = await message.reply_text(f"📢 ʙʀᴏᴀᴅᴄᴀsᴛɪɴɢ ᴛᴏ {total_users} ᴜsᴇʀs…")
+    last_update_time = asyncio.get_event_loop().time()
 
-    for user in all_users:
+    for idx, user in enumerate(all_users):
         try:
             await message.copy(chat_id=user["user_id"])
             success += 1
         except Exception:
             failed += 1
 
-    await status_msg.edit_text(
-        with_footer(
-            f"📢  <b>ʙʀᴏᴀᴅᴄᴀsᴛ ᴄᴏᴍᴘʟᴇᴛᴇ</b>\n\n"
-            f"✅ sᴇɴᴛ: {success}\n"
-            f"❌ ꜰᴀɪʟᴇᴅ: {failed}"
-        ),
-        parse_mode="HTML",
-    )
+        # Throttle request rate (approx 20 requests/sec max) to prevent Telegram API flood bans
+        await asyncio.sleep(0.05)
+
+        # Edit progress message periodically (every 50 users or 3 seconds) to keep admin informed live
+        now_time = asyncio.get_event_loop().time()
+        if (idx + 1) % 50 == 0 or (now_time - last_update_time) > 3.0:
+            last_update_time = now_time
+            try:
+                await status_msg.edit_text(
+                    f"📢  <b>ʙʀᴏᴀᴅᴄᴀsᴛ ɪɴ ᴘʀᴏɢʀᴇss…</b>\n\n"
+                    f"⏳ ᴘʀᴏɢʀᴇss: <code>{idx + 1}/{total_users}</code>\n"
+                    f"✅ sᴇɴᴛ: <code>{success}</code>\n"
+                    f"❌ ꜰᴀɪʟᴇᴅ: <code>{failed}</code>",
+                    parse_mode="HTML"
+                )
+            except Exception:
+                pass
+
+    try:
+        await status_msg.edit_text(
+            with_footer(
+                f"📢  <b>ʙʀᴏᴀᴅᴄᴀsᴛ ᴄᴏᴍᴘʟᴇᴛᴇ</b>\n\n"
+                f"✅ sᴇɴᴛ: {success}\n"
+                f"❌ ꜰᴀɪʟᴇᴅ: {failed}"
+            ),
+            parse_mode="HTML",
+        )
+    except Exception:
+        pass
 
     await channel_log(
         context.bot, "admin", update.effective_user.id, update.effective_user.username,

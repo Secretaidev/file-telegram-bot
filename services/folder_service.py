@@ -10,9 +10,13 @@ from typing import Any, Dict, List, Optional, Tuple
 from bson import ObjectId
 from database import folders, files
 from database.models import folder_doc as mk_folder
+from cachetools import TTLCache
 from config import cfg
 
 log = logging.getLogger(__name__)
+
+# Bounded cache to optimize hierarchical folder tree lookups and recursive breadcrumb loads
+_folder_cache: TTLCache[str, Dict[str, Any]] = TTLCache(maxsize=1000, ttl=300)
 
 
 class FolderService:
@@ -26,8 +30,14 @@ class FolderService:
 
     @staticmethod
     async def get_by_id(folder_id: str) -> Optional[Dict[str, Any]]:
+        cached = _folder_cache.get(folder_id)
+        if cached is not None:
+            return cached
         try:
-            return await folders().find_one({"_id": ObjectId(folder_id)})
+            doc = await folders().find_one({"_id": ObjectId(folder_id)})
+            if doc:
+                _folder_cache[folder_id] = doc
+            return doc
         except Exception:
             return None
 
@@ -60,6 +70,7 @@ class FolderService:
             {"_id": ObjectId(folder_id), "owner_id": owner_id},
             {"$set": {"name": new_name, "updated_at": datetime.utcnow()}},
         )
+        _folder_cache.pop(folder_id, None)
         return result.modified_count > 0
 
     @staticmethod
@@ -72,6 +83,7 @@ class FolderService:
             {"$set": {"folder_id": None, "updated_at": datetime.utcnow()}},
         )
         result = await folders().delete_one({"_id": ObjectId(folder_id), "owner_id": owner_id})
+        _folder_cache.pop(folder_id, None)
         return result.deleted_count > 0
 
     @staticmethod

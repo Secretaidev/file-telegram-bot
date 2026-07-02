@@ -12,9 +12,13 @@ from telegram import Message
 from database import files, users, file_doc, FileCategory
 from database.models import file_doc as mk_file
 from utils.helpers import hash_file_id, get_category, safe_filename, suggest_name
+from cachetools import TTLCache
 from config import cfg
 
 log = logging.getLogger(__name__)
+
+# Bounded in-memory cache for frequently accessed file details (avoids redundant MongoDB lookups)
+_file_cache: TTLCache[str, Dict[str, Any]] = TTLCache(maxsize=5000, ttl=300)
 
 
 class FileService:
@@ -119,8 +123,14 @@ class FileService:
 
     @staticmethod
     async def get_by_id(file_db_id: str) -> Optional[Dict[str, Any]]:
+        cached = _file_cache.get(file_db_id)
+        if cached is not None:
+            return cached
         try:
-            return await files().find_one({"_id": ObjectId(file_db_id), "is_deleted": False})
+            doc = await files().find_one({"_id": ObjectId(file_db_id), "is_deleted": False})
+            if doc:
+                _file_cache[file_db_id] = doc
+            return doc
         except Exception:
             return None
 
@@ -168,6 +178,7 @@ class FileService:
             {"_id": ObjectId(file_db_id), "owner_id": owner_id},
             {"$set": {"file_name": name, "updated_at": datetime.utcnow()}},
         )
+        _file_cache.pop(file_db_id, None)
         return result.modified_count > 0
 
     @staticmethod
@@ -176,6 +187,7 @@ class FileService:
             {"_id": ObjectId(file_db_id), "owner_id": owner_id},
             {"$set": {"folder_id": target_folder_id, "updated_at": datetime.utcnow()}},
         )
+        _file_cache.pop(file_db_id, None)
         return result.modified_count > 0
 
     @staticmethod
@@ -184,6 +196,7 @@ class FileService:
             {"_id": ObjectId(file_db_id), "owner_id": owner_id},
             {"$addToSet": {"tags": {"$each": tag_list}}, "$set": {"updated_at": datetime.utcnow()}},
         )
+        _file_cache.pop(file_db_id, None)
 
     @staticmethod
     async def increment_downloads(file_db_id: str) -> None:
@@ -191,6 +204,7 @@ class FileService:
             {"_id": ObjectId(file_db_id)},
             {"$inc": {"downloads": 1}},
         )
+        _file_cache.pop(file_db_id, None)
 
     @staticmethod
     async def increment_views(file_db_id: str) -> None:
@@ -198,6 +212,7 @@ class FileService:
             {"_id": ObjectId(file_db_id)},
             {"$inc": {"views": 1}},
         )
+        _file_cache.pop(file_db_id, None)
 
     # ── delete ────────────────────────────────────────────────────────────────
 
@@ -214,6 +229,7 @@ class FileService:
             {"user_id": owner_id},
             {"$inc": {"storage_used": -doc.get("file_size", 0), "file_count": -1}},
         )
+        _file_cache.pop(file_db_id, None)
         return doc
 
     # ── stats ─────────────────────────────────────────────────────────────────
