@@ -511,11 +511,14 @@ async def _show_user_stats(q, context, user_id: int) -> None:
     is_premium = user_doc.get("role") in ("premium", "admin", "owner")
     is_banned = user_doc.get("is_banned", False)
 
+    import html
+    name_esc = html.escape(user_doc.get("full_name") or "—")
+    uname_esc = html.escape(user_doc.get("username") or "—")
     text = (
         f"👤  <b>ᴜsᴇʀ ᴅᴇᴛᴀɪʟs</b>\n\n"
         f"ɪᴅ:      <code>{user_id}</code>\n"
-        f"ɴᴀᴍᴇ:    {user_doc.get('full_name', '—')}\n"
-        f"ᴜsᴇʀɴᴀᴍᴇ: @{user_doc.get('username') or '—'}\n"
+        f"ɴᴀᴍᴇ:    {name_esc}\n"
+        f"ᴜsᴇʀɴᴀᴍᴇ: @{uname_esc}\n"
         f"ʀᴏʟᴇ:    {user_doc.get('role', 'user')}\n"
         f"ʙᴀɴɴᴇᴅ:  {'🚫 ʏᴇs' if is_banned else '✅ ɴᴏ'}\n"
         f"ꜰɪʟᴇs:   {user_doc.get('file_count', 0)}\n"
@@ -676,9 +679,11 @@ async def handle_admin_search(update: Update, context: ContextTypes.DEFAULT_TYPE
     context.user_data.pop("admin_state", None)
     query_str = update.message.text.strip()
     user_doc = await UserService.search_user(query_str)
+    import html
+    q_esc = html.escape(query_str)
     if not user_doc:
         await update.message.reply_text(
-            with_footer(f"❌  ᴜsᴇʀ ɴᴏᴛ ꜰᴏᴜɴᴅ: <code>{query_str}</code>"),
+            with_footer(f"❌  ᴜsᴇʀ ɴᴏᴛ ꜰᴏᴜɴᴅ: <code>{q_esc}</code>"),
             reply_markup=back_btn("admin:panel"),
             parse_mode="HTML",
         )
@@ -687,11 +692,13 @@ async def handle_admin_search(update: Update, context: ContextTypes.DEFAULT_TYPE
     user_id = user_doc["user_id"]
     is_premium = user_doc.get("role") in ("premium", "admin", "owner")
     is_banned = user_doc.get("is_banned", False)
+    name_esc = html.escape(user_doc.get("full_name") or "—")
+    uname_esc = html.escape(user_doc.get("username") or "—")
     text = (
         f"👤  <b>ᴜsᴇʀ ꜰᴏᴜɴᴅ</b>\n\n"
         f"ɪᴅ:      <code>{user_id}</code>\n"
-        f"ɴᴀᴍᴇ:    {user_doc.get('full_name', '—')}\n"
-        f"ᴜsᴇʀɴᴀᴍᴇ: @{user_doc.get('username') or '—'}\n"
+        f"ɴᴀᴍᴇ:    {name_esc}\n"
+        f"ᴜsᴇʀɴᴀᴍᴇ: @{uname_esc}\n"
         f"ʀᴏʟᴇ:    {user_doc.get('role', 'user')}\n"
         f"ʙᴀɴɴᴇᴅ:  {'🚫 ʏᴇs' if is_banned else '✅ ɴᴏ'}\n"
         f"ꜰɪʟᴇs:   {user_doc.get('file_count', 0)}\n"

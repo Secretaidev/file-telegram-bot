@@ -68,9 +68,12 @@ async def channel_log(
         f"├ ᴜsᴇʀ: <code>{user_id}</code> ({user_ref})",
         f"├ ᴛɪᴍᴇ: <code>{ts} UTC</code>",
     ]
+    import html
     if details:
         for k, v in details.items():
-            lines.append(f"├ {k}: <code>{v}</code>")
+            k_esc = html.escape(str(k))
+            v_esc = html.escape(str(v))
+            lines.append(f"├ {k_esc}: <code>{v_esc}</code>")
 
     lines[-1] = lines[-1].replace("├", "└", 1)
     text = "\n".join(lines)
