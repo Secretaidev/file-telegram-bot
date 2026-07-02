@@ -82,7 +82,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
         try:
             await update.effective_message.reply_text(
                 "❌ sᴏᴍᴇᴛʜɪɴɢ ᴡᴇɴᴛ ᴡʀᴏɴɢ. ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ.\n"
-                "ɪꜰ ᴛʜɪs ᴘᴇʀsɪsᴛs, ᴄᴏɴᴛᴀᴄᴛ @song_assistant"
+                "ɪꜰ ᴛʜɪs ᴘᴇʀsɪsᴛs, ᴄᴏɴᴛᴀᴄᴛ @its_Xyron"
             )
         except Exception:
             pass
@@ -102,7 +102,7 @@ async def maintenance_gate(update: Update, context: ContextTypes.DEFAULT_TYPE) -
             "⚙️  <b>sʏsᴛᴇᴍ ᴜɴᴅᴇʀ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ</b>\n\n"
             "ᴛʜᴇ ʙᴏᴛ ɪs ᴄᴜʀʀᴇɴᴛʟʏ ᴜɴᴅᴇʀɢᴏɪɴɢ sᴄʜᴇᴅᴜʟᴇᴅ ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ.\n"
             "ᴀʟʟ ꜰᴇᴀᴛᴜʀᴇs ᴀʀᴇ ᴛᴇᴍᴘᴏʀᴀʀɪʟʏ ᴜɴᴀᴠᴀɪʟᴀʙʟᴇ.\n\n"
-            "⏳ ᴡᴇ ᴡɪʟʟ ʙᴇ ʙᴀᴄᴋ sᴏᴏɴ — ᴄʜᴇᴄᴋ @song_assistant ꜰᴏʀ ᴜᴘᴅᴀᴛᴇs.",
+            "⏳ ᴡᴇ ᴡɪʟʟ ʙᴇ ʙᴀᴄᴋ sᴏᴏɴ — ᴄʜᴇᴄᴋ @its_Xyron ꜰᴏʀ ᴜᴘᴅᴀᴛᴇs.",
             parse_mode="HTML",
         )
     elif update.callback_query:

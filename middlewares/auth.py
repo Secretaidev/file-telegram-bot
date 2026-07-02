@@ -54,7 +54,7 @@ async def auth_middleware(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         if update.message:
             await update.message.reply_text(
                 "🚫 ʏᴏᴜʀ ᴀᴄᴄᴏᴜɴᴛ ʜᴀs ʙᴇᴇɴ sᴜsᴘᴇɴᴅᴇᴅ.\n"
-                "CNTACT sᴜᴘᴘᴏʀᴛ: @song_assistant"
+                "CNTACT sᴜᴘᴘᴏʀᴛ: @its_Xyron"
             )
         return False
 

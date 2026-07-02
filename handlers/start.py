@@ -315,8 +315,8 @@ async def _show_help(query) -> None:
     markup = build(
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
         row(
-            url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret"),
-            url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant"),
+            url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_Xyron"),
+            url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/its_Xyron"),
         ),
     )
     await safe_edit(query, with_footer(text), reply_markup=markup, parse_mode="HTML")
@@ -337,8 +337,8 @@ async def _show_about(query) -> None:
     markup = build(
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start")),
         row(
-            url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret"),
-            url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant"),
+            url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_Xyron"),
+            url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/its_Xyron"),
         ),
     )
     await safe_edit(query, with_footer(text), reply_markup=markup, parse_mode="HTML")

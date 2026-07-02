@@ -264,7 +264,7 @@ async def cbq_pay(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 text=with_footer(
                     "❌  <b>ᴘᴀʏᴍᴇɴᴛ ʀᴇᴊᴇᴄᴛᴇᴅ</b>\n\n"
                     "ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ ᴡᴀs ɴᴏᴛ ᴠᴇʀɪꜰɪᴇᴅ.\n"
-                    "ᴄᴏɴᴛᴀᴄᴛ @song_assistant ꜰᴏʀ ʜᴇʟᴘ."
+                    "ᴄᴏɴᴛᴀᴄᴛ @its_Xyron ꜰᴏʀ ʜᴇʟᴘ."
                 ),
                 parse_mode="HTML",
             )

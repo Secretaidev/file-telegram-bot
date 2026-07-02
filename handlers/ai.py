@@ -281,11 +281,11 @@ Share link not working?
   Create a new link from the file card.
 
 Vault PIN forgotten?
-  Contact support @song_assistant — admin can reset your vault.
+  Contact support @its_Xyron — admin can reset your vault.
 
 Payment not activated?
   Wait a few hours after sending the screenshot.
-  If still not activated after 24 hours, contact @song_assistant.
+  If still not activated after 24 hours, contact @its_Xyron.
 
 Premium expired?
   Use /premium to renew.  Your files stay safe — only premium features lock.
@@ -322,7 +322,7 @@ Q: Can I use the bot in groups?
 A: Yes!  Mention the bot (@botname question) in a group to get AI answers.
 
 Q: How to contact support?
-A: Message @song_assistant on Telegram.
+A: Message @its_Xyron on Telegram.
 
 ━━━━━━━━━━━━━━━━  RESPONSE RULES  ━━━━━━━━━━━━━━━
 
@@ -332,7 +332,7 @@ A: Message @song_assistant on Telegram.
 4. If the user writes in Hindi or Hinglish, reply in Hinglish.
 5. If the user just says "hi/hello/hey", greet them and ask what they need.
 6. Guide users to the right command for their need.
-7. If something requires admin action, tell them to contact @song_assistant.
+7. If something requires admin action, tell them to contact @its_Xyron.
 8. Always end with a helpful follow-up or next step.
 """
 
@@ -431,7 +431,7 @@ _KEYWORD_MAP: list[tuple[list[str], str]] = [
         "*Files vault mein add karna:*\n"
         "File card mein 🔐 Add to Vault button tap karo\n\n"
         "*PIN bhool gaye?*\n"
-        "Support se contact karo: @song_assistant\n\n"
+        "Support se contact karo: @its_Xyron\n\n"
         "💡 Sensitive documents, private photos ke liye perfect!",
     ),
 
@@ -473,7 +473,7 @@ _KEYWORD_MAP: list[tuple[list[str], str]] = [
         "5️⃣ Screenshot directly bot ko bhejo (same chat mein)\n"
         "6️⃣ Admin review karega — kuch ghanton mein activate hoga ✅\n\n"
         "⚠️ 24 ghante baad bhi activate na ho toh:\n"
-        "Contact: @song_assistant",
+        "Contact: @its_Xyron",
     ),
 
     # ── share links ───────────────────────────────────────────────────────────
@@ -627,12 +627,12 @@ _KEYWORD_MAP: list[tuple[list[str], str]] = [
          "error", "nahi ho raha", "kaam nahi", "not working", "bug", "complaint",
          "helpline", "assist", "samajh nahi"],
         "🆘 *Support & Help:*\n\n"
-        "📬 *Direct Support:* @song_assistant\n"
-        "👨‍💻 *Developer:* @its_me_secret\n\n"
+        "📬 *Direct Support:* @its_Xyron\n"
+        "👨‍💻 *Developer:* @its_Xyron\n\n"
         "*Common solutions:*\n"
         "• Bot respond nahi kar raha → /start type karo\n"
         "• File upload fail → size check karo (free: 500MB)\n"
-        "• Vault PIN bhool gaya → @song_assistant contact karo\n"
+        "• Vault PIN bhool gaya → @its_Xyron contact karo\n"
         "• Payment activate nahi hui → 24 hr wait karo, fir contact karo\n"
         "• Share link kaam nahi kar raha → naya link banao\n\n"
         "Koi specific problem? Seedha batao — help karunga! 😊",

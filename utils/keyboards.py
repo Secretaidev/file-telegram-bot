@@ -73,8 +73,8 @@ def main_menu(is_premium: bool = False, is_admin: bool = False) -> InlineKeyboar
         rows.append(row(btn("⚙️  ᴀᴅᴍɪɴ ᴘᴀɴᴇʟ", "admin:panel", "primary")))
     rows.append(row(btn("❓  ʜᴇʟᴘ", "menu:help", "primary"), btn("ℹ️  ᴀʙᴏᴜᴛ", "menu:about", "primary")))
     rows.append(row(
-        url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret", "primary"),
-        url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant", "primary"),
+        url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_Xyron", "primary"),
+        url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/its_Xyron", "primary"),
     ))
     return build(*rows)
 
@@ -189,8 +189,8 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
             row(btn("📊  ᴍʏ ᴘʟᴀɴ", "premium:status", "primary")),
             row(btn("◀️  ʙᴀᴄᴋ", "menu:start", "primary")),
             row(
-                url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret", "primary"),
-                url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant", "primary"),
+                url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_Xyron", "primary"),
+                url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/its_Xyron", "primary"),
             ),
         )
     return build(
@@ -199,8 +199,8 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
         row(btn("📋  ᴘʟᴀɴ ᴄᴏᴍᴘᴀʀɪsᴏɴ", "premium:compare", "primary")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start", "primary")),
         row(
-            url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_me_secret", "primary"),
-            url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/song_assistant", "primary"),
+            url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_Xyron", "primary"),
+            url_btn("🆘  sᴜᴘᴘᴏʀᴛ", "https://t.me/its_Xyron", "primary"),
         ),
     )
 

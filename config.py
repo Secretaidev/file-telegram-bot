@@ -19,7 +19,13 @@ def _require(key: str) -> str:
 
 
 def _int(key: str, default: int) -> int:
-    return int(os.getenv(key, default))
+    val = os.getenv(key)
+    if not val:
+        return default
+    try:
+        return int(val)
+    except ValueError:
+        return default
 
 
 def _list(key: str, sep: str = ",") -> List[str]:
@@ -28,7 +34,13 @@ def _list(key: str, sep: str = ",") -> List[str]:
 
 
 def _list_int(key: str, sep: str = ",") -> List[int]:
-    return [int(x) for x in _list(key, sep)]
+    res = []
+    for x in _list(key, sep):
+        try:
+            res.append(int(x))
+        except ValueError:
+            pass
+    return res
 
 
 def _storage_limit_bytes(key: str, default_mb: int) -> int:
@@ -89,7 +101,7 @@ class Config:
     BOT_NAME: str = "sᴇᴄʀᴇᴛ ғɪʟᴇ sᴛᴏʀɪɴɢ ʙᴏᴛ"
 
     # footer
-    FOOTER: str = "ᴅᴇᴠ: @its_me_secret | sᴜᴘᴘᴏʀᴛ: @song_assistant"
+    FOOTER: str = "ᴅᴇᴠ: @its_Xyron | sᴜᴘᴘᴏʀᴛ: @its_Xyron"
 
     def is_admin(self, user_id: int) -> bool:
         return user_id == self.OWNER_ID or user_id in self.ADMIN_IDS
