@@ -102,7 +102,7 @@ async def cbq_premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 async def _show_payment_instructions(q, context, plan: str) -> None:
     from services.subscription_service import PLANS
-    plan_data = PLANS.get(plan, PLANS["yearly"])
+    plan_data = PLANS.get(plan, PLANS["monthly"])
     amount = plan_data["amount"]
 
     context.user_data["payment_plan"] = plan
