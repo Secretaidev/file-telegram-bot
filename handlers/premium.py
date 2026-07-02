@@ -52,6 +52,11 @@ async def cbq_premium(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await q.answer()
         await _show_payment_instructions(q, context, plan)
 
+    elif action == "direct":
+        plan = parts[2]
+        await q.answer()
+        await _show_direct_payment(q, context, plan)
+
     elif action == "payment":
         await q.answer()
         await q.edit_message_text(
@@ -111,9 +116,8 @@ async def _show_payment_methods(q, context, plan: str) -> None:
     plan_data = PLANS.get(plan, PLANS["monthly"])
     amount = plan_data["amount"]
 
-    from utils.keyboards import upi_pay_btn
     markup = build(
-        row(upi_pay_btn(amount, "💳  ᴘᴀʏ ᴠɪᴀ ʙʜɪᴍ ᴜᴘɪ (ᴅɪʀᴇᴄᴛ)")),
+        row(btn("💳  ᴘᴀʏ ᴠɪᴀ ʙʜɪᴍ ᴜᴘɪ (ᴅɪʀᴇᴄᴛ)", f"premium:direct:{plan}", "success")),
         row(btn("🔑  ᴘᴀʏ ᴠɪᴀ ᴜᴘɪ ɪᴅ (ᴍᴀɴᴜᴀʟ)", f"premium:manual:{plan}", "success")),
         row(btn("◀️  ʙᴀᴄᴋ", "premium:payment", "primary")),
     )
@@ -125,6 +129,36 @@ async def _show_payment_methods(q, context, plan: str) -> None:
         f"ᴄʜᴏᴏsᴇ ʏᴏᴜʀ ᴘᴀʏᴍᴇɴᴛ ᴍᴇᴛʜᴏᴅ:"
     )
     await q.edit_message_text(with_footer(text), reply_markup=markup, parse_mode="HTML")
+
+
+async def _show_direct_payment(q, context, plan: str) -> None:
+    from services.subscription_service import PLANS
+    plan_data = PLANS.get(plan, PLANS["monthly"])
+    amount = plan_data["amount"]
+
+    context.user_data["payment_plan"] = plan
+    context.user_data["payment_amount"] = amount
+
+    import urllib.parse
+    pa = cfg.UPI_ID
+    pn = urllib.parse.quote(cfg.UPI_NAME)
+    upi_link = f"upi://pay?pa={pa}&pn={pn}&am={amount}&cu=INR"
+
+    markup = build(
+        row(btn("📸  sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ", "premium:paid", "success")),
+        row(btn("◀️  ʙᴀᴄᴋ", f"premium:buy:{plan}", "primary")),
+    )
+
+    text = (
+        f"💳  <b>ʙʜɪᴍ ᴜᴘɪ ᴅɪʀᴇᴄᴛ ᴘᴀʏᴍᴇɴᴛ</b>\n\n"
+        f"ᴘʟᴀɴ:   <b>{plan_data['label'].upper()}</b>\n"
+        f"ᴀᴍᴏᴜɴᴛ: <b>₹{amount}</b>\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"👉 <b><a href=\"{upi_link}\">ᴛᴀᴘ ʜᴇʀᴇ ᴛᴏ ᴘᴀʏ (ᴏᴘᴇɴs ᴜᴘɪ ᴀᴘᴘ)</a></b>\n\n"
+        f"<i>Tapping the link above will open GPay, PhonePe, Paytm, or BHIM directly on your mobile device.</i>\n\n"
+        f"After making the payment, click the button below to submit your payment screenshot."
+    )
+    await q.edit_message_text(with_footer(text), reply_markup=markup, parse_mode="HTML", disable_web_page_preview=True)
 
 
 async def _show_payment_instructions(q, context, plan: str) -> None:

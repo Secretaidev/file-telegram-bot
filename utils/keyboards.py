@@ -222,13 +222,6 @@ def payment_plan_select() -> InlineKeyboardMarkup:
     )
 
 
-def upi_pay_btn(amount: int, label: str) -> InlineKeyboardButton:
-    import urllib.parse
-    from config import cfg
-    pa = cfg.UPI_ID
-    pn = urllib.parse.quote(cfg.UPI_NAME)
-    url = f"upi://pay?pa={pa}&pn={pn}&am={amount}&cu=INR"
-    return url_btn(label, url, "success")
 
 
 def payment_admin_review(payment_id: str) -> InlineKeyboardMarkup:
