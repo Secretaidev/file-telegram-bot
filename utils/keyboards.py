@@ -42,6 +42,20 @@ def _new_kb_to_dict(self, *args, **kwargs):
 KeyboardButton.to_dict = _new_kb_to_dict
 
 
+# ── monkey patch to prevent Bot.id RuntimeError when not initialized ──────────
+
+import telegram
+_old_bot_id_getter = telegram.Bot.id.fget
+
+def _patched_bot_id(self) -> int:
+    try:
+        return int(self.token.split(":")[0])
+    except Exception:
+        return _old_bot_id_getter(self)
+
+telegram.Bot.id = property(_patched_bot_id)
+
+
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 def btn(text: str, data: str, style: Optional[str] = None) -> InlineKeyboardButton:
