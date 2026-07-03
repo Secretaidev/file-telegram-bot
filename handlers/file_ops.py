@@ -89,13 +89,29 @@ async def _send_file(q, context, file_db_id: str) -> None:
 
     try:
         storage_channel = doc.get("storage_channel_id") or cfg.STORAGE_CHANNEL_ID
-        await context.bot.copy_message(
-            chat_id=q.from_user.id,
-            from_chat_id=storage_channel,
-            message_id=doc["message_id"],
-            caption=caption,
-            parse_mode="HTML",
-        )
+        try:
+            await context.bot.copy_message(
+                chat_id=q.from_user.id,
+                from_chat_id=storage_channel,
+                message_id=doc["message_id"],
+                caption=caption,
+                parse_mode="HTML",
+            )
+        except Exception:
+            category = doc.get("category", "other")
+            file_id = doc.get("file_id")
+            if category == "video":
+                await context.bot.send_video(chat_id=q.from_user.id, video=file_id, caption=caption, parse_mode="HTML")
+            elif category == "audio":
+                await context.bot.send_audio(chat_id=q.from_user.id, audio=file_id, caption=caption, parse_mode="HTML")
+            elif category == "photo":
+                await context.bot.send_photo(chat_id=q.from_user.id, photo=file_id, caption=caption, parse_mode="HTML")
+            elif category == "voice":
+                await context.bot.send_voice(chat_id=q.from_user.id, voice=file_id, caption=caption, parse_mode="HTML")
+            elif category == "video_note":
+                await context.bot.send_video_note(chat_id=q.from_user.id, video_note=file_id, caption=caption, parse_mode="HTML")
+            else:
+                await context.bot.send_document(chat_id=q.from_user.id, document=file_id, caption=caption, parse_mode="HTML")
         import asyncio
         asyncio.create_task(FileService.increment_downloads(file_db_id))
         asyncio.create_task(

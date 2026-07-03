@@ -96,11 +96,30 @@ async def handle_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             return
         storage_channel = random.choice(channels)
 
-        storage_msg = await context.bot.copy_message(
-            chat_id=storage_channel,
-            from_chat_id=message.chat_id,
-            message_id=message.message_id,
-        )
+        from telegram import Bot
+        main_bot = Bot(token=cfg.BOT_TOKEN)
+
+        try:
+            storage_msg = await context.bot.copy_message(
+                chat_id=storage_channel,
+                from_chat_id=message.chat_id,
+                message_id=message.message_id,
+            )
+        except Exception:
+            if message.document:
+                storage_msg = await main_bot.send_document(chat_id=storage_channel, document=attachment.file_id, caption=message.caption)
+            elif message.video:
+                storage_msg = await main_bot.send_video(chat_id=storage_channel, video=attachment.file_id, caption=message.caption)
+            elif message.audio:
+                storage_msg = await main_bot.send_audio(chat_id=storage_channel, audio=attachment.file_id, caption=message.caption)
+            elif message.photo:
+                storage_msg = await main_bot.send_photo(chat_id=storage_channel, photo=attachment.file_id, caption=message.caption)
+            elif message.voice:
+                storage_msg = await main_bot.send_voice(chat_id=storage_channel, voice=attachment.file_id, caption=message.caption)
+            elif message.video_note:
+                storage_msg = await main_bot.send_video_note(chat_id=storage_channel, video_note=attachment.file_id, caption=message.caption)
+            else:
+                storage_msg = await main_bot.send_document(chat_id=storage_channel, document=attachment.file_id, caption=message.caption)
 
         tags = _extract_tags(message.caption or "")
 

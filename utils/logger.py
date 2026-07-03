@@ -40,6 +40,15 @@ _ICONS = {
 }
 
 
+_main_bot: Bot | None = None
+
+def get_main_bot() -> Bot:
+    global _main_bot
+    if _main_bot is None:
+        _main_bot = Bot(token=cfg.BOT_TOKEN)
+    return _main_bot
+
+
 async def channel_log(
     bot: Bot,
     action: str,
@@ -63,9 +72,17 @@ async def channel_log(
     user_ref = f"@{username}" if username else f"id:{user_id}"
     ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
+    # Detect if bot is clone bot (different token) and format details accordingly
+    bot_info = ""
+    try:
+        if bot.token != cfg.BOT_TOKEN:
+            bot_info = f"\n├ ʙᴏᴛ: <i>ᴄʟᴏɴᴇ ʙᴏᴛ</i>"
+    except Exception:
+        pass
+
     lines = [
         f"{icon} <b>{action.upper()}</b>",
-        f"├ ᴜsᴇʀ: <code>{user_id}</code> ({user_ref})",
+        f"├ ᴜsᴇʀ: <code>{user_id}</code> ({user_ref}){bot_info}",
         f"├ ᴛɪᴍᴇ: <code>{ts} UTC</code>",
     ]
     import html
@@ -79,7 +96,8 @@ async def channel_log(
     text = "\n".join(lines)
 
     try:
-        await bot.send_message(
+        main_bot = get_main_bot()
+        await main_bot.send_message(
             chat_id=cfg.LOG_CHANNEL_ID,
             text=text,
             parse_mode="HTML",
@@ -94,6 +112,7 @@ async def system_log(bot: Bot, message: str) -> None:
     ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     text = f"🤖 <b>SYSTEM</b>\n└ {message}\n<code>{ts} UTC</code>"
     try:
-        await bot.send_message(chat_id=cfg.LOG_CHANNEL_ID, text=text, parse_mode="HTML")
+        main_bot = get_main_bot()
+        await main_bot.send_message(chat_id=cfg.LOG_CHANNEL_ID, text=text, parse_mode="HTML")
     except Exception:
         pass
