@@ -275,7 +275,7 @@ async def cbq_pay(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await _show_payment_instructions(q, context, plan)
 
     elif action == "approve":
-        if not cfg.is_admin(q.from_user.id, q.bot.id):
+        if not cfg.is_admin(q.from_user.id, context.bot.id):
             await q.answer("⛔ ᴀᴅᴍɪɴ ᴏɴʟʏ.", show_alert=True)
             return
         payment_id = parts[2]
@@ -306,7 +306,7 @@ async def cbq_pay(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
 
     elif action == "reject":
-        if not cfg.is_admin(q.from_user.id, q.bot.id):
+        if not cfg.is_admin(q.from_user.id, context.bot.id):
             await q.answer("⛔ ᴀᴅᴍɪɴ ᴏɴʟʏ.", show_alert=True)
             return
         payment_id = parts[2]

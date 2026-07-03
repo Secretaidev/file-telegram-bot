@@ -56,7 +56,7 @@ async def cmd_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def cbq_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     global _MAINTENANCE_MODE
     q = update.callback_query
-    if not cfg.is_admin(q.from_user.id, q.bot.id):
+    if not cfg.is_admin(q.from_user.id, context.bot.id):
         await q.answer("⛔ ᴀᴅᴍɪɴ ᴏɴʟʏ.", show_alert=True)
         return
 
