@@ -44,7 +44,7 @@ _LOG_ICONS: dict = {
 
 
 async def cmd_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not cfg.is_admin(update.effective_user.id):
+    if not cfg.is_admin(update.effective_user.id, context.bot.id):
         return
     await update.message.reply_text(
         with_footer("⚙️  <b>ᴀᴅᴍɪɴ ᴘᴀɴᴇʟ</b>\n\nᴡᴇʟᴄᴏᴍᴇ, ᴀᴅᴍɪɴ."),
@@ -56,7 +56,7 @@ async def cmd_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def cbq_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     global _MAINTENANCE_MODE
     q = update.callback_query
-    if not cfg.is_admin(q.from_user.id):
+    if not cfg.is_admin(q.from_user.id, q.bot.id):
         await q.answer("⛔ ᴀᴅᴍɪɴ ᴏɴʟʏ.", show_alert=True)
         return
 
@@ -540,7 +540,7 @@ async def handle_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     import asyncio
     if context.user_data.get("admin_state") != "broadcast":
         return
-    if not cfg.is_admin(update.effective_user.id):
+    if not cfg.is_admin(update.effective_user.id, context.bot.id):
         return
 
     context.user_data.pop("admin_state", None)
@@ -697,7 +697,7 @@ async def cmd_maintenance(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 async def handle_admin_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if context.user_data.get("admin_state") != "search_user":
         return
-    if not cfg.is_admin(update.effective_user.id):
+    if not cfg.is_admin(update.effective_user.id, context.bot.id):
         return
 
     context.user_data.pop("admin_state", None)

@@ -148,15 +148,17 @@ async def handle_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             parse_mode="HTML",
         )
 
-        await UserService.add_to_recent(user.id, file_db_id)
-
-        await channel_log(
-            context.bot, "upload", user.id, user.username,
-            details={
-                "file":   doc["file_name"],
-                "size":   format_size(doc.get("file_size", 0)),
-                "vault":  str(is_vault),
-            },
+        import asyncio
+        asyncio.create_task(UserService.add_to_recent(user.id, file_db_id))
+        asyncio.create_task(
+            channel_log(
+                context.bot, "upload", user.id, user.username,
+                details={
+                    "file":   doc["file_name"],
+                    "size":   format_size(doc.get("file_size", 0)),
+                    "vault":  str(is_vault),
+                },
+            )
         )
 
     except Exception as e:

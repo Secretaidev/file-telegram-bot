@@ -16,11 +16,23 @@ _db: AsyncIOMotorDatabase | None = None
 
 async def connect() -> None:
     global _client, _db
-    _client = AsyncIOMotorClient(cfg.MONGO_URI)
-    _db = _client[cfg.DB_NAME]
-    await _db.command("ping")
-    log.info("mongodb connected — database: %s", cfg.DB_NAME)
-    await _create_indexes()
+    import asyncio
+    retries = 3
+    delay = 2
+    for attempt in range(retries):
+        try:
+            _client = AsyncIOMotorClient(cfg.MONGO_URI, serverSelectionTimeoutMS=5000)
+            _db = _client[cfg.DB_NAME]
+            await _db.command("ping")
+            log.info("mongodb connected — database: %s", cfg.DB_NAME)
+            await _create_indexes()
+            return
+        except Exception as e:
+            log.error("mongodb connection attempt %d/%d failed: %s", attempt + 1, retries, e)
+            if attempt == retries - 1:
+                raise
+            await asyncio.sleep(delay)
+            delay *= 2
 
 
 async def disconnect() -> None:
@@ -48,6 +60,7 @@ def payments():     return get_db()["payments"]
 def subscriptions():return get_db()["subscriptions"]
 def tags():         return get_db()["tags"]
 def analytics():    return get_db()["analytics"]
+def clones():       return get_db()["clones"]
 
 
 async def _create_indexes() -> None:
@@ -93,5 +106,8 @@ async def _create_indexes() -> None:
     await db["logs"].create_index("created_at")
 
     await db["analytics"].create_index([("user_id", 1), ("date", 1)])
+    await db["clones"].create_index("token", unique=True)
+    await db["clones"].create_index("bot_id", unique=True)
+    await db["clones"].create_index("owner_id")
 
     log.info("mongodb indexes created")

@@ -94,7 +94,7 @@ async def maintenance_gate(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         return
 
     user = update.effective_user
-    if user and cfg.is_admin(user.id):
+    if user and cfg.is_admin(user.id, context.bot.id):
         return
 
     if update.message:

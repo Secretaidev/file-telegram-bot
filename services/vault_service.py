@@ -27,11 +27,14 @@ class VaultService:
         return bool(doc and doc.get("vault_pin"))
 
     @staticmethod
-    async def set_pin(user_id: int, pin: str) -> None:
+    async def set_pin(user_id: int, pin: str, recovery_key: Optional[str] = None) -> None:
         hashed = hash_pin(pin)
+        update_doc = {"vault_pin": hashed}
+        if recovery_key:
+            update_doc["vault_recovery_key"] = recovery_key
         await users().update_one(
             {"user_id": user_id},
-            {"$set": {"vault_pin": hashed}},
+            {"$set": update_doc},
         )
 
     @staticmethod
@@ -41,11 +44,31 @@ class VaultService:
             return False
         return doc["vault_pin"] == hash_pin(pin)
 
+    @staticmethod
+    async def verify_recovery_key(user_id: int, key: str) -> bool:
+        doc = await users().find_one({"user_id": user_id}, {"vault_recovery_key": 1})
+        if not doc or not doc.get("vault_recovery_key"):
+            return False
+        return doc["vault_recovery_key"] == key.strip()
+
     # ── session management ────────────────────────────────────────────────────
 
     @staticmethod
+    async def get_session_timeout(user_id: int) -> int:
+        doc = await users().find_one({"user_id": user_id}, {"vault_timeout": 1})
+        return doc.get("vault_timeout", cfg.SESSION_TIMEOUT) if doc else cfg.SESSION_TIMEOUT
+
+    @staticmethod
+    async def set_session_timeout(user_id: int, timeout: int) -> None:
+        await users().update_one(
+            {"user_id": user_id},
+            {"$set": {"vault_timeout": timeout}},
+        )
+
+    @staticmethod
     async def create_session(user_id: int) -> None:
-        expires = datetime.utcnow() + timedelta(seconds=cfg.SESSION_TIMEOUT)
+        timeout = await VaultService.get_session_timeout(user_id)
+        expires = datetime.utcnow() + timedelta(seconds=timeout)
         await sessions().replace_one(
             {"user_id": user_id},
             vault_session_doc(user_id, expires),

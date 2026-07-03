@@ -85,7 +85,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await _show_loading(loading_msg)
 
     is_premium = await UserService.is_premium(user.id)
-    is_admin = cfg.is_admin(user.id)
+    is_admin = cfg.is_admin(user.id, context.bot.id)
 
     import html
     text = with_footer(WELCOME.format(name=html.escape(user.first_name or "")))
@@ -179,7 +179,7 @@ async def cbq_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if action == "start":
         user = update.effective_user
         is_premium = await UserService.is_premium(user.id)
-        is_admin = cfg.is_admin(user.id)
+        is_admin = cfg.is_admin(user.id, query.bot.id)
         text = with_footer(WELCOME.format(name=user.first_name))
         markup = main_menu(is_premium=is_premium, is_admin=is_admin)
         await safe_edit(query, text, reply_markup=markup, parse_mode="HTML")
@@ -358,7 +358,7 @@ async def cbq_check_joined(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         await query.answer("✅ ᴛʜᴀɴᴋs ꜰᴏʀ ᴊᴏɪɴɪɴɢ!", show_alert=False)
         user = update.effective_user
         is_premium = await UserService.is_premium(user.id)
-        is_admin = cfg.is_admin(user.id)
+        is_admin = cfg.is_admin(user.id, query.bot.id)
         text = with_footer(WELCOME.format(name=user.first_name))
         markup = main_menu(is_premium=is_premium, is_admin=is_admin)
         await safe_edit(query, text, reply_markup=markup, parse_mode="HTML")

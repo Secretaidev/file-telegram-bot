@@ -24,7 +24,7 @@ async def rate_limit_middleware(update: Update, context: ContextTypes.DEFAULT_TY
 
     user_id = update.effective_user.id
 
-    if cfg.is_admin(user_id) or cfg.is_owner(user_id):
+    if cfg.is_admin(user_id, context.bot.id) or cfg.is_owner(user_id, context.bot.id):
         return True
 
     now = time.monotonic()

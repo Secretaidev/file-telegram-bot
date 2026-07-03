@@ -40,6 +40,7 @@ def _register_handlers(app: Application) -> None:
         handlers.admin,
         handlers.favorites,
         handlers.stats,
+        handlers.clone,
     ):
         for handler in module.get_handlers():
             app.add_handler(handler)
@@ -55,6 +56,7 @@ def _register_handlers(app: Application) -> None:
     from handlers.search import handle_search_text
     from handlers.admin import handle_broadcast, handle_admin_search
     from handlers.premium import handle_payment_screenshot
+    from handlers.clone import handle_bot_token_input, handle_clone_owner_input
 
     _private_text = filters.TEXT & ~filters.COMMAND & filters.ChatType.PRIVATE
     _private_all  = filters.ALL  & ~filters.COMMAND & filters.ChatType.PRIVATE
@@ -65,6 +67,8 @@ def _register_handlers(app: Application) -> None:
     app.add_handler(MessageHandler(_private_text, handle_search_text), group=4)
     app.add_handler(MessageHandler(_private_all,  handle_broadcast), group=5)
     app.add_handler(MessageHandler(_private_text, handle_admin_search), group=7)
+    app.add_handler(MessageHandler(_private_text, handle_bot_token_input), group=8)
+    app.add_handler(MessageHandler(_private_text, handle_clone_owner_input), group=9)
 
     # Payment screenshot — private chats only
     app.add_handler(
@@ -107,11 +111,18 @@ async def _on_startup(app: Application) -> None:
     log.info("bot username: @%s", me.username)
     scheduler.start(app.bot)
     await system_log(app.bot, "🚀 vault bot started")
+
+    # Start all active clone bots in background
+    from services import BotCloneService
+    asyncio.create_task(BotCloneService.start_all())
+
     log.info("startup complete")
 
 
 async def _on_shutdown(app: Application) -> None:
     scheduler.stop()
+    from services import BotCloneService
+    await BotCloneService.stop_all()
     await disconnect()
     await system_log(app.bot, "⛔ vault bot stopped")
     log.info("shutdown complete")

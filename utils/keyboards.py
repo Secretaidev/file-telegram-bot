@@ -11,6 +11,7 @@ from config import cfg
 # ── monkey patch for colorful buttons ─────────────────────────────────────────
 
 _button_styles = {}
+_button_copy_texts = {}
 
 _old_inline_to_dict = InlineKeyboardButton.to_dict
 
@@ -19,6 +20,11 @@ def _new_inline_to_dict(self, *args, **kwargs):
     style = _button_styles.pop(id(self), None)
     if style:
         d["style"] = style
+
+    copy_text = _button_copy_texts.pop(id(self), None)
+    if copy_text:
+        d["copy_text"] = {"text": str(copy_text)}
+        d.pop("callback_data", None)
     return d
 
 InlineKeyboardButton.to_dict = _new_inline_to_dict
@@ -41,6 +47,13 @@ KeyboardButton.to_dict = _new_kb_to_dict
 def btn(text: str, data: str, style: Optional[str] = None) -> InlineKeyboardButton:
     b = InlineKeyboardButton(text, callback_data=data)
     _button_styles[id(b)] = style or "primary"
+    return b
+
+
+def copy_btn(text: str, copy_text: str, style: Optional[str] = None) -> InlineKeyboardButton:
+    b = InlineKeyboardButton(text, callback_data="noop")
+    _button_styles[id(b)] = style or "primary"
+    _button_copy_texts[id(b)] = copy_text
     return b
 
 
@@ -195,6 +208,7 @@ def premium_menu(has_premium: bool = False) -> InlineKeyboardMarkup:
         return build(
             row(btn("✅  ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴛɪᴠᴇ", "noop", "success")),
             row(btn("📊  ᴍʏ ᴘʟᴀɴ", "premium:status", "primary")),
+            row(btn("🤖  ᴍʏ ᴄʟᴏɴᴇ ʙᴏᴛs", "clone:list:0", "success")),
             row(btn("◀️  ʙᴀᴄᴋ", "menu:start", "primary")),
             row(
                 url_btn("👨‍💻  ᴅᴇᴠ", "https://t.me/its_Xyron", "primary"),
@@ -237,13 +251,31 @@ def vault_menu() -> InlineKeyboardMarkup:
     return build(
         row(btn("📁  ᴍʏ ᴠᴀᴜʟᴛ ꜰɪʟᴇs", "vault:list", "primary"), btn("📤  ᴜᴘʟᴏᴀᴅ ᴛᴏ ᴠᴀᴜʟᴛ", "vault:upload", "success")),
         row(btn("🔒  ʟᴏᴄᴋ ᴠᴀᴜʟᴛ", "vault:lock", "danger"), btn("🔑  ᴄʜᴀɴɢᴇ ᴘɪɴ", "vault:change_pin", "primary")),
-        row(btn("◀️  ʙᴀᴄᴋ", "menu:start", "primary")),
+        row(btn("⏳  ᴀᴜᴛᴏ-ʟᴏᴄᴋ ᴛɪᴍᴇ", "vault:settings_timeout", "primary"), btn("◀️  ʙᴀᴄᴋ", "menu:start", "primary")),
+    )
+
+
+def vault_timeout_settings(current_timeout: int) -> InlineKeyboardMarkup:
+    b1_style = "success" if current_timeout == 60 else "primary"
+    b2_style = "success" if current_timeout == 300 else "primary"
+    b3_style = "success" if current_timeout == 900 else "primary"
+    b4_style = "success" if current_timeout == 1800 else "primary"
+    b5_style = "success" if current_timeout == 86400 else "primary"
+
+    return build(
+        row(btn("⏱  1 ᴍɪɴ", "vault:set_timeout:60", b1_style),
+            btn("⏱  5 ᴍɪɴ", "vault:set_timeout:300", b2_style)),
+        row(btn("⏱  15 ᴍɪɴ", "vault:set_timeout:900", b3_style),
+            btn("⏱  30 ᴍɪɴ", "vault:set_timeout:1800", b4_style)),
+        row(btn("♾  ɴᴇᴠᴇʀ", "vault:set_timeout:86400", b5_style)),
+        row(btn("◀️  ʙᴀᴄᴋ", "menu:vault", "primary")),
     )
 
 
 def vault_unlock() -> InlineKeyboardMarkup:
     return build(
         row(btn("🔑  ᴇɴᴛᴇʀ ᴘɪɴ", "vault:enter_pin", "success")),
+        row(btn("🔄  ʀᴇsᴇᴛ ᴘɪɴ (ᴠɪᴀ ᴋᴇʏ)", "vault:reset_pin_req", "danger")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:start", "primary")),
     )
 
@@ -263,8 +295,10 @@ def share_options(file_db_id: str) -> InlineKeyboardMarkup:
 
 def share_link_view(token: str, link_id: str) -> InlineKeyboardMarkup:
     from utils.helpers import start_link
+    url = start_link(f"dl_{token}")
     return build(
-        row(url_btn("🔗  ᴏᴘᴇɴ ʟɪɴᴋ", start_link(f"dl_{token}"), "success")),
+        row(copy_btn("📋  ᴄᴏᴘʏ sʜᴀʀᴇ ʟɪɴᴋ", url, "success")),
+        row(url_btn("🔗  ᴏᴘᴇɴ ʟɪɴᴋ", url, "success")),
         row(btn("🗑  ʀᴇᴠᴏᴋᴇ ʟɪɴᴋ", f"share:revoke:{link_id}", "danger")),
         row(btn("◀️  ʙᴀᴄᴋ", "menu:links", "primary")),
     )

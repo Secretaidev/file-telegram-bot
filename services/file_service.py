@@ -135,6 +135,29 @@ class FileService:
             return None
 
     @staticmethod
+    async def get_by_ids(file_db_ids: List[str]) -> Dict[str, Dict[str, Any]]:
+        results = {}
+        missing_ids = []
+        for fid in file_db_ids:
+            cached = _file_cache.get(fid)
+            if cached is not None:
+                results[fid] = cached
+            else:
+                missing_ids.append(fid)
+        
+        if missing_ids:
+            try:
+                object_ids = [ObjectId(fid) for fid in missing_ids]
+                cursor = files().find({"_id": {"$in": object_ids}, "is_deleted": False})
+                async for doc in cursor:
+                    fid_str = str(doc["_id"])
+                    _file_cache[fid_str] = doc
+                    results[fid_str] = doc
+            except Exception as e:
+                log.error("get_by_ids error: %s", e)
+        return results
+
+    @staticmethod
     async def list_user_files(
         owner_id: int,
         folder_id: Optional[str] = None,
@@ -231,6 +254,53 @@ class FileService:
         )
         _file_cache.pop(file_db_id, None)
         return doc
+
+    @staticmethod
+    async def find_duplicates(owner_id: int) -> List[Dict[str, Any]]:
+        pipeline = [
+            {"$match": {"owner_id": owner_id, "is_deleted": False}},
+            {"$group": {
+                "_id": "$unique_id",
+                "docs": {"$push": {"_id": "$_id", "file_name": "$file_name", "file_size": "$file_size"}},
+                "count": {"$sum": 1},
+                "total_size": {"$sum": "$file_size"}
+            }},
+            {"$match": {"count": {"$gt": 1}}},
+        ]
+        cursor = files().aggregate(pipeline)
+        return await cursor.to_list(100)
+
+    @staticmethod
+    async def clean_duplicates(owner_id: int) -> Tuple[int, int]:
+        dups = await FileService.find_duplicates(owner_id)
+        if not dups:
+            return 0, 0
+
+        files_deleted = 0
+        space_saved = 0
+        to_delete_ids = []
+
+        for group in dups:
+            docs = group["docs"]
+            # keep the first, delete the rest
+            for d in docs[1:]:
+                to_delete_ids.append(d["_id"])
+                files_deleted += 1
+                space_saved += d["file_size"]
+                # invalidate from cache
+                _file_cache.pop(str(d["_id"]), None)
+
+        if to_delete_ids:
+            await files().update_many(
+                {"_id": {"$in": to_delete_ids}},
+                {"$set": {"is_deleted": True}}
+            )
+            await users().update_one(
+                {"user_id": owner_id},
+                {"$inc": {"storage_used": -space_saved, "file_count": -files_deleted}}
+            )
+
+        return files_deleted, space_saved
 
     # ── stats ─────────────────────────────────────────────────────────────────
 

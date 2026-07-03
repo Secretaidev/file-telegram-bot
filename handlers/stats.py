@@ -24,8 +24,55 @@ async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def cbq_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     q = update.callback_query
-    await q.answer()
-    await _show_user_stats(update, context)
+    parts = q.data.split(":")
+    action = parts[1] if len(parts) > 1 else None
+    user_id = q.from_user.id
+
+    if action == "optimize_req":
+        await q.answer()
+        dups = await FileService.find_duplicates(user_id)
+        total_dups = 0
+        total_size = 0
+        for group in dups:
+            single_size = group["docs"][0]["file_size"]
+            total_size += group["total_size"] - single_size
+            total_dups += group["count"] - 1
+
+        if total_dups == 0:
+            text = (
+                "🧹  <b>sᴘᴀᴄᴇ ᴏᴘᴛɪᴍɪᴢᴇʀ</b>\n\n"
+                "🎉 <b>ɴᴏ ᴅᴜᴘʟɪᴄᴀᴛᴇs ꜰᴏᴜɴᴅ!</b>\n\n"
+                "ʏᴏᴜʀ sᴛᴏʀᴀɢᴇ ɪs ᴀʟʀᴇᴀᴅʏ fully optimized."
+            )
+            markup = build(row(btn("◀️  ʙᴀᴄᴋ", "stats", "primary")))
+        else:
+            text = (
+                "🧹  <b>sᴘᴀᴄᴇ ᴏᴘᴛɪᴍɪᴢᴇʀ</b>\n\n"
+                f"• ᴅᴜᴘʟɪᴄᴀᴛᴇ ꜰɪʟᴇs: <b>{total_dups}</b>\n"
+                f"• ʀᴇᴄʟᴀɪᴍᴀʙʟᴇ sᴘᴀᴄᴇ: <b>{format_size(total_size)}</b>\n\n"
+                "Tapping the button below will keep one copy of each file and delete the duplicate copies."
+            )
+            markup = build(
+                row(btn("🧹  ᴄʟᴇᴀɴ ᴅᴜᴘʟɪᴄᴀᴛᴇs", "stats:optimize_run", "success")),
+                row(btn("◀️  ʙᴀᴄᴋ", "stats", "primary"))
+            )
+        await q.edit_message_text(with_footer(text), reply_markup=markup, parse_mode="HTML")
+
+    elif action == "optimize_run":
+        files_deleted, space_saved = await FileService.clean_duplicates(user_id)
+        await q.answer(f"🧹 Cleaned {files_deleted} duplicates!")
+        text = (
+            "🧹  <b>sᴘᴀᴄᴇ ᴏᴘᴛɪᴍɪᴢᴇʀ</b>\n\n"
+            "✅  <b>sᴛᴏʀᴀɢᴇ ᴏᴘᴛɪᴍɪᴢᴇᴅ sᴜᴄᴄᴇssꜰᴜʟʟʏ!</b>\n\n"
+            f"• ᴅᴜᴘʟɪᴄᴀᴛᴇs ᴅᴇʟᴇᴛᴇᴅ: <b>{files_deleted}</b>\n"
+            f"• sᴘᴀᴄᴇ ʀᴇᴄʟᴀɪᴍᴇᴅ: <b>{format_size(space_saved)}</b>"
+        )
+        markup = build(row(btn("◀️  ʙᴀᴄᴋ", "stats", "primary")))
+        await q.edit_message_text(with_footer(text), reply_markup=markup, parse_mode="HTML")
+
+    else:
+        await q.answer()
+        await _show_user_stats(update, context)
 
 
 async def _show_user_stats(
@@ -97,6 +144,7 @@ async def _show_user_stats(
         text += f"\n┌ <b>ᴘʀᴇᴍɪᴜᴍ</b>\n{sub_line}"
 
     markup = build(
+        row(btn("🧹  sᴘᴀᴄᴇ ᴏᴘᴛɪᴍɪᴢᴇʀ", "stats:optimize_req", "success")),
         row(btn("⭐  ꜰᴀᴠᴏʀɪᴛᴇs", "favs:list:0"), btn("⏱  ʀᴇᴄᴇɴᴛ", "favs:recent")),
         row(btn("💎  ᴘʀᴇᴍɪᴜᴍ", "menu:premium"), btn("◀️  ʙᴀᴄᴋ", "menu:start")),
     )

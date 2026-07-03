@@ -5,7 +5,7 @@ loads and validates all environment variables at startup
 
 import os
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -103,11 +103,25 @@ class Config:
     # footer
     FOOTER: str = "ᴅᴇᴠ: @its_Xyron | sᴜᴘᴘᴏʀᴛ: @its_Xyron"
 
-    def is_admin(self, user_id: int) -> bool:
-        return user_id == self.OWNER_ID or user_id in self.ADMIN_IDS
+    def is_admin(self, user_id: int, bot_id: Optional[int] = None) -> bool:
+        if user_id == self.OWNER_ID or user_id in self.ADMIN_IDS:
+            return True
+        if bot_id:
+            from services.clone_service import BotCloneService
+            clone_owner = BotCloneService.get_owner(bot_id)
+            if clone_owner and user_id == clone_owner:
+                return True
+        return False
 
-    def is_owner(self, user_id: int) -> bool:
-        return user_id == self.OWNER_ID
+    def is_owner(self, user_id: int, bot_id: Optional[int] = None) -> bool:
+        if user_id == self.OWNER_ID:
+            return True
+        if bot_id:
+            from services.clone_service import BotCloneService
+            clone_owner = BotCloneService.get_owner(bot_id)
+            if clone_owner and user_id == clone_owner:
+                return True
+        return False
 
     def all_storage_channels(self) -> List[int]:
         """Return all storage channel IDs, falling back to STORAGE_CHANNEL_ID.

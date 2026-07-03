@@ -7,9 +7,10 @@ from .user_service import UserService
 from .subscription_service import SubscriptionService, PLANS
 from .backup_service import BackupService
 from .analytics_service import AnalyticsService
+from .clone_service import BotCloneService
 
 __all__ = [
     "FileService", "FolderService", "SearchService", "VaultService",
     "ShareService", "UserService", "SubscriptionService", "PLANS",
-    "BackupService", "AnalyticsService",
+    "BackupService", "AnalyticsService", "BotCloneService",
 ]

@@ -49,7 +49,7 @@ async def check_membership(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     user = update.effective_user
     if not user:
         return True
-    if cfg.is_owner(user.id) or cfg.is_admin(user.id):
+    if cfg.is_owner(user.id, context.bot.id) or cfg.is_admin(user.id, context.bot.id):
         return True
 
     bot = context.bot

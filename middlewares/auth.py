@@ -78,7 +78,7 @@ async def auth_middleware(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 def require_admin(func):
     async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = update.effective_user
-        if not user or not cfg.is_admin(user.id):
+        if not user or not cfg.is_admin(user.id, context.bot.id):
             if update.message:
                 await update.message.reply_text("⛔ ᴀᴅᴍɪɴ ᴏɴʟʏ.")
             elif update.callback_query:
@@ -93,7 +93,7 @@ def require_premium(func):
         user = update.effective_user
         if not user:
             return
-        if cfg.is_admin(user.id):
+        if cfg.is_admin(user.id, context.bot.id):
             return await func(update, context)
 
         # Use cache to check role

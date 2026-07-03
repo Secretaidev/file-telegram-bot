@@ -169,7 +169,9 @@ async def _show_payment_instructions(q, context, plan: str) -> None:
     context.user_data["payment_plan"] = plan
     context.user_data["payment_amount"] = amount
 
+    from utils import copy_btn
     markup = build(
+        row(copy_btn("📋  ᴄᴏᴘʏ ᴜᴘɪ ɪᴅ", cfg.UPI_ID, "success")),
         row(btn("📸  sᴇɴᴅ sᴄʀᴇᴇɴsʜᴏᴛ", "premium:paid", "success")),
         row(btn("◀️  ʙᴀᴄᴋ", f"premium:buy:{plan}", "primary")),
     )
@@ -273,7 +275,7 @@ async def cbq_pay(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await _show_payment_instructions(q, context, plan)
 
     elif action == "approve":
-        if not cfg.is_admin(q.from_user.id):
+        if not cfg.is_admin(q.from_user.id, q.bot.id):
             await q.answer("⛔ ᴀᴅᴍɪɴ ᴏɴʟʏ.", show_alert=True)
             return
         payment_id = parts[2]
@@ -304,7 +306,7 @@ async def cbq_pay(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
 
     elif action == "reject":
-        if not cfg.is_admin(q.from_user.id):
+        if not cfg.is_admin(q.from_user.id, q.bot.id):
             await q.answer("⛔ ᴀᴅᴍɪɴ ᴏɴʟʏ.", show_alert=True)
             return
         payment_id = parts[2]

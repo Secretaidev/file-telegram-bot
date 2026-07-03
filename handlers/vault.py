@@ -121,6 +121,51 @@ async def cbq_vault(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             parse_mode="HTML",
         )
 
+    elif action == "reset_pin_req":
+        await q.answer()
+        context.user_data["vault_state"] = "reset_pin_key"
+        await q.edit_message_text(
+            with_footer(
+                "🔑  <b>ᴠᴀᴜʟᴛ ᴘɪɴ ʀᴇsᴇᴛ</b>\n\n"
+                "ᴘʟᴇᴀsᴇ sᴇɴᴅ ʏᴏᴜʀ <b>ᴠᴀᴜʟᴛ ʀᴇᴄᴏᴠᴇʀʏ ᴋᴇʏ</b> now.\n\n"
+                "<i>Example: VAULT-XXXX-XXXX-XXXX</i>"
+            ),
+            reply_markup=back_btn("menu:start"),
+            parse_mode="HTML",
+        )
+
+    elif action == "settings_timeout":
+        await q.answer()
+        timeout = await VaultService.get_session_timeout(user_id)
+        from utils import vault_timeout_settings
+        text = (
+            "⏳  <b>ᴀᴜᴛᴏ-ʟᴏᴄᴋ ᴛɪᴍᴇᴏᴜᴛ sᴇᴛᴛɪɴɢs</b>\n\n"
+            "Choose how long the Vault should remain unlocked before automatically locking:\n\n"
+            f"ᴄᴜʀʀᴇɴᴛ: <b>{timeout // 60 if timeout < 86400 else 'Never'} min</b>"
+        )
+        await q.edit_message_text(
+            with_footer(text),
+            reply_markup=vault_timeout_settings(timeout),
+            parse_mode="HTML",
+        )
+
+    elif action == "set_timeout":
+        seconds = int(parts[2])
+        await VaultService.set_session_timeout(user_id, seconds)
+        await q.answer("⏳ Auto-lock timeout updated successfully!")
+        timeout = seconds
+        from utils import vault_timeout_settings
+        text = (
+            "⏳  <b>ᴀᴜᴛᴏ-ʟᴏᴄᴋ ᴛɪᴍᴇᴏᴜᴛ sᴇᴛᴛɪɴɢs</b>\n\n"
+            "Choose how long the Vault should remain unlocked before automatically locking:\n\n"
+            f"ᴄᴜʀʀᴇɴᴛ: <b>{timeout // 60 if timeout < 86400 else 'Never'} min</b>"
+        )
+        await q.edit_message_text(
+            with_footer(text),
+            reply_markup=vault_timeout_settings(timeout),
+            parse_mode="HTML",
+        )
+
 
 async def _show_vault_files(q, context, user_id: int, page: int) -> None:
     vault_files, total = await VaultService.list_vault_files(user_id, page)
@@ -189,15 +234,39 @@ async def handle_vault_input(update: Update, context: ContextTypes.DEFAULT_TYPE)
         if pin != expected:
             await update.message.reply_text("❌ ᴘɪɴs ᴅᴏ ɴᴏᴛ ᴍᴀᴛᴄʜ. /vault ᴛᴏ ᴛʀʏ ᴀɢᴀɪɴ.")
             return
-        await VaultService.set_pin(user_id, pin)
+        import uuid
+        recovery_key = f"VAULT-{uuid.uuid4().hex[:16].upper()}"
+        await VaultService.set_pin(user_id, pin, recovery_key)
         await VaultService.create_session(user_id)
         context.user_data.pop("vault_state", None)
+        text = (
+            "✅  <b>ᴘɪɴ sᴇᴛ! ᴠᴀᴜʟᴛ ᴜɴʟᴏᴄᴋᴇᴅ.</b>\n\n"
+            "⚠️  <b>IMPORTANT: sᴀᴠᴇ ʏᴏᴜʀ ʀᴇᴄᴏᴠᴇʀʏ ᴋᴇʏ</b>\n"
+            f"<code>{recovery_key}</code>\n\n"
+            "<i>If you ever forget your PIN, you can use this key to reset it. Support cannot recover your vault.</i>"
+        )
         await update.message.reply_text(
-            with_footer("✅  ᴘɪɴ sᴇᴛ! ᴠᴀᴜʟᴛ ᴜɴʟᴏᴄᴋᴇᴅ."),
+            with_footer(text),
             reply_markup=vault_menu(),
             parse_mode="HTML",
         )
         await channel_log(context.bot, "vault", user_id, update.effective_user.username, details={"action": "pin_set"})
+
+    elif state == "reset_pin_key":
+        key = pin.upper().strip()
+        ok = await VaultService.verify_recovery_key(user_id, key)
+        if ok:
+            context.user_data["vault_state"] = "setup_pin"
+            await update.message.reply_text(
+                with_footer(
+                    "✅  <b>ʀᴇᴄᴏᴠᴇʀʏ ᴋᴇʏ ᴠᴇʀɪꜰɪᴇᴅ</b>\n\n"
+                    "ᴘʟᴇᴀsᴇ sᴇɴᴅ ᴀ ɴᴇᴡ 4-6 ᴅɪɢɪᴛ ᴘɪɴ to secure your vault:"
+                ),
+                reply_markup=back_btn("menu:start"),
+                parse_mode="HTML",
+            )
+        else:
+            await update.message.reply_text("❌ ɪɴᴠᴀʟɪᴅ ʀᴇᴄᴏᴠᴇʀʏ ᴋᴇʏ. ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ:")
 
     elif state == "enter_pin":
         ok = await VaultService.verify_pin(user_id, pin)

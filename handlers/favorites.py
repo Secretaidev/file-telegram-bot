@@ -79,9 +79,12 @@ async def _show_favorites(
     page = max(0, min(page, total_pages - 1))
     chunk_ids = fav_ids[page * page_size:(page + 1) * page_size]
 
+    # Batch resolve file documents
+    docs_map = await FileService.get_by_ids(chunk_ids)
+
     rows = []
     for fid in chunk_ids:
-        doc = await FileService.get_by_id(fid)
+        doc = docs_map.get(fid)
         if not doc:
             continue
         icon = category_icon(doc.get("category", "other"))
@@ -131,9 +134,12 @@ async def _show_recent(
             await update.callback_query.edit_message_text(text, reply_markup=markup, parse_mode="HTML")
         return
 
+    # Batch resolve file documents
+    docs_map = await FileService.get_by_ids(recent_ids[:10])
+
     rows = []
     for fid in recent_ids[:10]:
-        doc = await FileService.get_by_id(fid)
+        doc = docs_map.get(fid)
         if not doc:
             continue
         icon = category_icon(doc.get("category", "other"))
